@@ -1,2 +1,21 @@
+# Private / local-only
 CLAUDE.md
 *.pdf
+
+# Dependencies and build output
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Env files (examples and the frontend dev defaults are committed)
+.env
+.env.*
+!.env.example
+!.env.development
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+*.log
