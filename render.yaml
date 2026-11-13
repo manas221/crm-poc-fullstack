@@ -1,0 +1,44 @@
+# Render Blueprint: static frontend + Node API + Postgres, all on the free plan.
+# Every resource sets `plan: free` explicitly; a missing plan defaults to paid Starter.
+
+services:
+  - type: web
+    name: contacts-api
+    runtime: node
+    plan: free # switch to starter (~$7/mo, prorated) during the review window to avoid cold starts
+    region: singapore # must match the database region
+    rootDir: backend
+    buildCommand: npm ci && npm run build
+    # Free instances have no pre-deploy command, so migrations run on every start.
+    startCommand: npm run migrate && npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: contacts-db
+          property: connectionString # internal URL, no SSL needed
+      - key: CORS_ORIGIN
+        sync: false # the frontend URL, e.g. https://contacts-web.onrender.com
+
+  - type: web
+    name: contacts-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite # SPA fallback, so /contacts/123 doesn't 404 on refresh
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: VITE_API_URL
+        sync: false # the API URL, e.g. https://contacts-api.onrender.com, baked in at build time
+
+databases:
+  - name: contacts-db
+    plan: free
+    region: singapore
