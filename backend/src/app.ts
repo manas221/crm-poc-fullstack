@@ -2,6 +2,7 @@ import express, { type Express } from 'express';
 import cors from 'cors';
 import { config } from './config.js';
 import { errorHandler, notFoundHandler } from './errors/error-handler.js';
+import { contactRouter } from './routes/contact.routes.js';
 import { healthRouter } from './routes/health.routes.js';
 
 // Builds the Express app without listening, so tests can import it with supertest.
@@ -12,6 +13,7 @@ export function createApp(): Express {
   app.use(express.json());
 
   app.use(healthRouter);
+  app.use('/api/contacts', contactRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
