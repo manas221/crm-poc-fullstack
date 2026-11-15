@@ -8,6 +8,7 @@ export {
   ChevronRightIcon,
   ChevronUpDownIcon,
   ChevronUpIcon,
+  CopyIcon,
   SearchIcon,
   XIcon,
 } from './icons.tsx';

@@ -1,6 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { listCompanies } from '../api/companies.ts';
 import { bulkAssignTag, listContacts } from '../api/contacts.ts';
+import { ApiError } from '../api/client.ts';
 import { listTags } from '../api/tags.ts';
 import { COMPANY_SUGGESTION_LIMIT } from '../constants/list.ts';
 import type { BulkAssignTagRequest, ListCompaniesParams, ListContactsParams } from '../types/api.ts';
@@ -76,8 +77,16 @@ export function useBulkAssignTagMutation() {
   return useMutation({
     mutationFn: (body: BulkAssignTagRequest) => bulkAssignTag(body),
     // Tags show in the list rows and on the detail page, so refresh everything contact-related.
-    // On an error nothing was written (the backend uses one transaction), so nothing to refresh.
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.contacts.all }),
+    // On an error nothing was written (one transaction). A 404 means our data is out of date
+    // (a tag or contacts were deleted), so refresh the tags and everything contact-related
+    // (the lists, which drop the missing rows from the selection, and the total).
+    onError: (error) => {
+      if (error instanceof ApiError && error.code === 'NOT_FOUND') {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.tags.all });
+        void queryClient.invalidateQueries({ queryKey: queryKeys.contacts.all });
+      }
+    },
   });
 }
 

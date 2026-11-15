@@ -1,4 +1,5 @@
 import { Skeleton } from '../../../../components/Skeleton';
+import { CONTACT_TABLE_COLUMN_KEYS } from '../../contactsListView.constants.ts';
 import { COLUMNS } from './columns.ts';
 
 // Varying bar widths (fixed per row, not random) so the skeleton looks like real text.
@@ -11,7 +12,11 @@ export function SkeletonRows({ count }: { count: number }) {
         <tr key={row} aria-hidden="true">
           {COLUMNS.map((column, col) => (
             <td key={column.key} className="px-4 py-4">
-              <Skeleton className={WIDTHS[(row + col) % WIDTHS.length]} />
+              {column.key === CONTACT_TABLE_COLUMN_KEYS.CHECKBOX ? (
+                <Skeleton className="size-4" /> // a grey square where the checkbox goes
+              ) : (
+                <Skeleton className={WIDTHS[(row + col) % WIDTHS.length]} />
+              )}
             </td>
           ))}
         </tr>

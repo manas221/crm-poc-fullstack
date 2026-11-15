@@ -28,6 +28,21 @@ export const LIST_VIEW_ACTION_TYPES = {
   LIMIT: 'limit',
 } as const;
 
+/** Action types for the row selection reducer (rowSelectionReducer in hooks/useRowSelection.ts). */
+export const ROW_SELECTION_ACTION_TYPES = {
+  TOGGLE: 'toggle',
+  SELECT_MANY: 'selectMany',
+  CLEAR: 'clear',
+} as const;
+
+/** State of the last "Assign tag" request, as shown in the selection bar. */
+export const BULK_ASSIGN_STATUS = {
+  IDLE: 'idle',
+  PENDING: 'pending',
+  SUCCESS: 'success',
+  ERROR: 'error',
+} as const;
+
 /**
  * Status of a data-driven part of the view (table, pagination footer), built by
  * useContactsListView from the query state. Each part's data type is a union on `status`.
@@ -47,6 +62,8 @@ export const INITIAL_SORT_ORDER: Record<ContactSort, SortOrder> = {
   [CONTACT_SORT_KEYS.NAME]: SORT_ORDER.ASC,
   [CONTACT_SORT_KEYS.CREATED_AT]: SORT_ORDER.DESC,
 };
+
+const contactsCount = (count: number) => `${count} ${count === 1 ? 'contact' : 'contacts'}`;
 
 /** User-facing text of the list view, in one place. */
 export const LIST_VIEW_TEXT = {
@@ -87,6 +104,32 @@ export const LIST_VIEW_TEXT = {
       REMOVE_ARIA_LABEL: (label: string, value: string) => `Remove filter ${label}: ${value}`,
     },
   },
+  SELECTION: {
+    SELECTED_COUNT: (formattedCount: string) => `${formattedCount} selected`,
+    CLEAR_SELECTION: 'Clear selection',
+    SELECT_ALL_ARIA_LABEL: 'Select all contacts on this page',
+    SELECT_ROW_ARIA_LABEL: (name: string) => `Select ${name}`,
+  },
+  ASSIGN_TAG: {
+    LABEL: 'Assign tag',
+    MENU_TITLE: (count: number) => `Add a tag to ${contactsCount(count)}`,
+    ASSIGNING: 'Assigning…',
+    ADDED_ALL: (tagName: string, count: number) => `Added “${tagName}” to ${contactsCount(count)}.`,
+    ADDED_SOME: (tagName: string, added: number, alreadyHad: number) =>
+      `Added “${tagName}” to ${contactsCount(added)}. ${alreadyHad} already had it.`,
+    ADDED_NONE: (tagName: string, count: number) =>
+      count === 1 ? `This contact already has “${tagName}”.` : `All ${count} contacts already have “${tagName}”.`,
+    /** Used if the tag isn't in the loaded tags list (shouldn't happen). */
+    FALLBACK_TAG_NAME: 'the tag',
+    TAG_NOT_FOUND: 'That tag no longer exists. Pick another one.',
+    CONTACTS_NOT_FOUND: (count: number) =>
+      `${contactsCount(count)} no longer ${count === 1 ? 'exists' : 'exist'}, so nothing was changed. The list has been refreshed.`,
+    FAILED: 'Couldn’t assign the tag. Please try again.',
+    RETRY: 'Try again',
+    LOADING: 'Loading tags…',
+    ERROR: 'Couldn’t load tags.',
+    NO_TAGS: 'No tags yet',
+  },
   NO_RESULTS: {
     TITLE: 'No contacts match your search',
     DESCRIPTION: 'Try a different search term or remove a filter.',
@@ -108,6 +151,8 @@ export const LIST_VIEW_TEXT = {
   TABLE: {
     LOADING: 'Loading contacts…',
     EMPTY_VALUE: 'None',
+    COPY_EMAIL: (email: string) => `Copy email ${email}`,
+    COPY_PHONE: (phone: string) => `Copy phone ${phone}`,
   },
   PAGINATION: {
     NAV_LABEL: 'Pagination',
@@ -131,6 +176,7 @@ export const LIST_VIEW_TEXT = {
 
 /** Columns of the contacts table. Order and widths live in components/ContactsTable/columns.ts. */
 export const CONTACT_TABLE_COLUMN_KEYS = {
+  CHECKBOX: 'checkbox',
   NAME: 'name',
   EMAIL: 'email',
   PHONE: 'phone',
@@ -141,6 +187,8 @@ export const CONTACT_TABLE_COLUMN_KEYS = {
 
 /** Header text per column. Typed as a Record, so adding a column without a label won't compile. */
 export const CONTACT_TABLE_COLUMN_LABELS: Record<ContactTableColumnKey, string> = {
+  // The checkbox column has no visible header text; the select-all checkbox has its own label.
+  [CONTACT_TABLE_COLUMN_KEYS.CHECKBOX]: 'Select',
   [CONTACT_TABLE_COLUMN_KEYS.NAME]: 'Name',
   [CONTACT_TABLE_COLUMN_KEYS.EMAIL]: 'Email',
   [CONTACT_TABLE_COLUMN_KEYS.PHONE]: 'Phone',

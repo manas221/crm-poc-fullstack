@@ -70,6 +70,15 @@ export interface BulkAssignTagResponse {
   added: number;
 }
 
+/**
+ * `details` of a 404 from POST /api/contacts/bulk/tags (contact-tag.service.ts): the tag is
+ * missing, or some contacts are (then nothing was written).
+ */
+export interface BulkAssignTagNotFoundDetails {
+  tagId?: number;
+  missingContactIds?: number[];
+}
+
 /** `details` of a 400 VALIDATION_ERROR (zod's flattened errors). */
 export interface ValidationErrorDetails {
   formErrors: string[];

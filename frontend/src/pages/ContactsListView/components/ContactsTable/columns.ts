@@ -4,9 +4,10 @@ import type { ContactTableColumn } from '../../contactsListView.types.ts';
 // One list of columns drives the header, the rows and the skeleton, so they always line up.
 // Widths are fixed (table-fixed) so long values truncate instead of stretching the table.
 // Header text comes from CONTACT_TABLE_COLUMN_LABELS. Only columns with a sortKey are sortable
-// (the backend allowlists name and createdAt).
+// (the backend allowlists name and createdAt). The CHECKBOX column holds the row checkboxes.
 
 export const COLUMNS: readonly ContactTableColumn[] = [
+  { key: CONTACT_TABLE_COLUMN_KEYS.CHECKBOX, width: 'w-12' },
   { key: CONTACT_TABLE_COLUMN_KEYS.NAME, width: 'w-[17%]', sortKey: CONTACT_SORT_KEYS.NAME },
   { key: CONTACT_TABLE_COLUMN_KEYS.EMAIL, width: 'w-[19%]' },
   { key: CONTACT_TABLE_COLUMN_KEYS.PHONE, width: 'w-[14%]' },

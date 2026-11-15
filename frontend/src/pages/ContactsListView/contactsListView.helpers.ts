@@ -6,8 +6,9 @@ import {
   MIN_SEARCH_LENGTH,
   PAGE_SIZE_OPTIONS,
 } from '../../constants/list.ts';
-import { CONTACT_SORTS, DEFAULT_ORDER, DEFAULT_SORT, SORT_ORDERS } from './contactsListView.constants.ts';
-import type { ContactSort, SortOrder } from '../../types/api.ts';
+import { ApiError } from '../../api/client.ts';
+import { CONTACT_SORTS, DEFAULT_ORDER, DEFAULT_SORT, LIST_VIEW_TEXT, SORT_ORDERS } from './contactsListView.constants.ts';
+import type { BulkAssignTagNotFoundDetails, BulkAssignTagResponse, ContactSort, SortOrder } from '../../types/api.ts';
 import type { ListParams } from './contactsListView.types.ts';
 
 // The list's search, filters, sort and page live only in the URL (CLAUDE.md §8). These pure
@@ -115,4 +116,27 @@ export function hasActiveFilters(params: ListParams): boolean {
 /** Number of pages for `total` rows. An empty list still has one (empty) page: "Page 1 of 1". */
 export function getPageCount(total: number, limit: number): number {
   return Math.max(1, Math.ceil(total / limit));
+}
+
+/** "Added “VIP” to 2 contacts. 1 already had it." */
+export function getBulkAssignSuccessMessage({ requested, added }: BulkAssignTagResponse, tagName: string): string {
+  const text = LIST_VIEW_TEXT.ASSIGN_TAG;
+  if (added === requested) {
+    return text.ADDED_ALL(tagName, added);
+  }
+  return added === 0 ? text.ADDED_NONE(tagName, requested) : text.ADDED_SOME(tagName, added, requested - added);
+}
+
+/** What went wrong with a bulk assign, by error code (CLAUDE.md §8), and whether a retry can help. */
+export function getBulkAssignError(error: unknown): { message: string; canRetry: boolean } {
+  const text = LIST_VIEW_TEXT.ASSIGN_TAG;
+  if (error instanceof ApiError && error.code === 'NOT_FOUND') {
+    const details = (error.details ?? {}) as BulkAssignTagNotFoundDetails;
+    if (details.missingContactIds && details.missingContactIds.length > 0) {
+      // The refreshed list drops those rows, and with them their ids from the selection.
+      return { message: text.CONTACTS_NOT_FOUND(details.missingContactIds.length), canRetry: true };
+    }
+    return { message: text.TAG_NOT_FOUND, canRetry: false };
+  }
+  return { message: text.FAILED, canRetry: true };
 }

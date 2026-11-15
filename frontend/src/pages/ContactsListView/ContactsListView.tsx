@@ -7,6 +7,7 @@ import { ActiveFilterChips } from './components/ActiveFilterChips';
 import { ContactsTable } from './components/ContactsTable';
 import { FiltersBar } from './components/FiltersBar';
 import { PaginationFooter } from './components/PaginationFooter';
+import { SelectionBar } from './components/SelectionBar';
 import { LIST_VIEW_STATUS, LIST_VIEW_TEXT } from './contactsListView.constants.ts';
 import { useContactsListView } from './hooks/useContactsListView.ts';
 
@@ -19,6 +20,9 @@ export function ContactsListView() {
     tagOptions,
     tagIds,
     selectedTags,
+    selectedIds,
+    bulkAssignData,
+    isAssigning,
     hasFilters,
     isPastLastPage,
     handleSearch,
@@ -33,6 +37,11 @@ export function ContactsListView() {
     handleLimitChange,
     handleGoToLastPage,
     handleRetry,
+    handleToggleRow,
+    handleToggleAllRows,
+    handleClearSelection,
+    handleAssignTag,
+    handleRetryAssign,
   } = useContactsListView();
 
   const emptyState = isPastLastPage ? (
@@ -83,6 +92,17 @@ export function ContactsListView() {
         onRemoveTag={handleRemoveTag}
       />
 
+      {selectedIds.size > 0 && (
+        <SelectionBar
+          selectedCount={selectedIds.size}
+          tagOptions={tagOptions}
+          bulkAssign={bulkAssignData}
+          onAssignTag={handleAssignTag}
+          onRetryAssign={handleRetryAssign}
+          onClearSelection={handleClearSelection}
+        />
+      )}
+
       {tableData.status === LIST_VIEW_STATUS.ERROR && (
         <Alert
           variant="error"
@@ -102,6 +122,10 @@ export function ContactsListView() {
         sort={params.sort}
         order={params.order}
         onSort={handleSort}
+        selectedIds={selectedIds}
+        onToggleRow={handleToggleRow}
+        onToggleAllRows={handleToggleAllRows}
+        isSelectionLocked={isAssigning}
       />
 
       <PaginationFooter
