@@ -1,4 +1,4 @@
-import { useContactsTotalQuery } from '../../queries/contacts.ts';
+import { useContactsTotalQuery } from '../../queries/contacts-queries.ts';
 import { formatNumber } from '../../utils/format.ts';
 
 export function ContactsListView() {
