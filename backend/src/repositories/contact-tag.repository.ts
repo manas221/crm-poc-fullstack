@@ -21,3 +21,20 @@ export async function insertIgnoringExisting(
     .execute();
   return rows.map((r) => r.contactId);
 }
+
+/** Links one contact to one tag. False if the link already existed (nothing written). */
+export async function insertOne(contactId: number, tagId: number, executor: Kysely<Database> = db): Promise<boolean> {
+  const inserted = await insertIgnoringExisting([contactId], tagId, executor);
+  return inserted.length > 0;
+}
+
+/** Unlinks one contact from one tag. False if there was no link (nothing deleted). */
+export async function deleteOne(contactId: number, tagId: number, executor: Kysely<Database> = db): Promise<boolean> {
+  const deleted = await executor
+    .deleteFrom('contactTags')
+    .where('contactId', '=', contactId)
+    .where('tagId', '=', tagId)
+    .returning('contactId')
+    .execute();
+  return deleted.length > 0;
+}

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { pathId } from './contact.schemas.js';
 
 export const MAX_BULK_CONTACTS = 1000;
 
@@ -18,3 +19,13 @@ export const bulkAssignTagBodySchema = z
   .strict();
 
 export type BulkAssignTagBody = z.infer<typeof bulkAssignTagBodySchema>;
+
+// POST /api/contacts/:id/tags
+export const addTagBodySchema = z.object({ tagId: id }).strict();
+
+export type AddTagBody = z.infer<typeof addTagBodySchema>;
+
+// DELETE /api/contacts/:id/tags/:tagId
+export const contactTagParamsSchema = z.object({ id: pathId, tagId: pathId });
+
+export type ContactTagParams = z.infer<typeof contactTagParamsSchema>;
