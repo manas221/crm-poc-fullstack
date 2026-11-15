@@ -5,10 +5,12 @@ interface DetailCardProps {
   /** Small text on the right of the title, e.g. "Editing" or "Changes save automatically". */
   aside?: ReactNode;
   children?: ReactNode;
+  /** A grey bar under the body, e.g. Cancel / Save. */
+  footer?: ReactNode;
 }
 
 /** The bordered, titled card that holds each section of the page (details, activity, tags). */
-export function DetailCard({ title, aside, children }: DetailCardProps) {
+export function DetailCard({ title, aside, children, footer }: DetailCardProps) {
   const titleId = useId();
   return (
     <section aria-labelledby={titleId} className="rounded-lg border border-gray-200 bg-white">
@@ -19,6 +21,9 @@ export function DetailCard({ title, aside, children }: DetailCardProps) {
         {aside && <span className="text-sm text-gray-500">{aside}</span>}
       </header>
       {children && <div className="p-5">{children}</div>}
+      {footer && (
+        <footer className="flex justify-end gap-3 rounded-b-lg border-t border-gray-200 bg-gray-50 px-5 py-4">{footer}</footer>
+      )}
     </section>
   );
 }

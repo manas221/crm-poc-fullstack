@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { contactIdParamsSchema, listContactsQuerySchema } from '../schemas/contact.schemas.js';
+import { contactIdParamsSchema, listContactsQuerySchema, updateContactBodySchema } from '../schemas/contact.schemas.js';
 import * as contactService from '../services/contact.service.js';
 import { toContactDto } from './contact.dto.js';
 
@@ -16,4 +16,10 @@ export async function listContacts(req: Request, res: Response): Promise<void> {
 export async function getContact(req: Request, res: Response): Promise<void> {
   const { id } = contactIdParamsSchema.parse(req.params);
   res.json(toContactDto(await contactService.getContact(id)));
+}
+
+export async function updateContact(req: Request, res: Response): Promise<void> {
+  const { id } = contactIdParamsSchema.parse(req.params);
+  const body = updateContactBodySchema.parse(req.body);
+  res.json(toContactDto(await contactService.updateContact(id, body)));
 }

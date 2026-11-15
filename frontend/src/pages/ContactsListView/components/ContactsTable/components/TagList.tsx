@@ -1,6 +1,6 @@
+import { EmptyValue } from '../../../../../components/EmptyValue';
 import { TagPill } from '../../../../../components/TagPill';
 import type { Tag } from '../../../../../types/api.ts';
-import { EmptyValue } from './EmptyValue.tsx';
 
 const MAX_VISIBLE_TAGS = 2;
 

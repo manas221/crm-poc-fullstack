@@ -67,3 +67,54 @@ export const contactIdParamsSchema = z.object({
 });
 
 export type ContactIdParams = z.infer<typeof contactIdParamsSchema>;
+
+// PATCH /api/contacts/:id (CLAUDE.md §6). Strings are trimmed; for the nullable fields a blank
+// string means "clear it" and is stored as NULL. Email is stored lowercased, matching the
+// lower(email) unique index.
+export const EDITABLE_CONTACT_FIELDS = ['firstName', 'lastName', 'email', 'phone', 'company'] as const;
+export type EditableContactField = (typeof EDITABLE_CONTACT_FIELDS)[number];
+
+export const MAX_NAME_LENGTH = 100;
+export const MAX_EMAIL_LENGTH = 254;
+export const MAX_COMPANY_LENGTH = 200;
+export const PHONE_PATTERN = /^[+]?[\d\s()-]{7,20}$/;
+
+const blankToNull = (value: unknown) => (typeof value === 'string' && value.trim() === '' ? null : value);
+
+// Required: can be changed but not cleared, so null and "" are rejected.
+const personName = z.string().trim().min(1, 'Required').max(MAX_NAME_LENGTH);
+
+const email = z.preprocess(
+  blankToNull,
+  z.string().trim().toLowerCase().max(MAX_EMAIL_LENGTH).pipe(z.email('Invalid email address')).nullable(),
+);
+
+const phone = z.preprocess(
+  blankToNull,
+  z
+    .string()
+    .trim()
+    .regex(PHONE_PATTERN, 'Phone may contain digits, spaces, ( ) and -, optionally starting with +, 7-20 characters')
+    .nullable(),
+);
+
+const company = z.preprocess(blankToNull, z.string().trim().max(MAX_COMPANY_LENGTH).nullable());
+
+// version is the one the client last read (optimistic locking, §7). JSON body, so it must be
+// a real number. .strict() rejects unknown fields (e.g. a typo, or trying to set id/version).
+export const updateContactBodySchema = z
+  .object({
+    version: z.number().int().positive(),
+    firstName: personName.optional(),
+    lastName: personName.optional(),
+    email: email.optional(),
+    phone: phone.optional(),
+    company: company.optional(),
+  })
+  .strict()
+  .refine(
+    (body) => EDITABLE_CONTACT_FIELDS.some((field) => body[field] !== undefined),
+    'At least one field to update is required',
+  );
+
+export type UpdateContactBody = z.infer<typeof updateContactBodySchema>;

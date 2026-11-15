@@ -1,12 +1,12 @@
 import { Link } from 'react-router';
 import { Checkbox } from '../../../../../components/Checkbox';
 import { CopyButton } from '../../../../../components/CopyButton';
+import { EmptyValue } from '../../../../../components/EmptyValue';
 import type { Contact } from '../../../../../types/api.ts';
 import { formatDate } from '../../../../../utils/format.ts';
 import { FROM_LIST_STATE } from '../../../../../utils/navigation.ts';
 import { LIST_VIEW_TEXT } from '../../../contactsListView.constants.ts';
 import type { ContactCellProps } from '../../../contactsListView.types.ts';
-import { EmptyValue } from './EmptyValue.tsx';
 import { TagList } from './TagList.tsx';
 
 // One cell component per column, referenced from COLUMNS (columns.ts). Each renders its whole

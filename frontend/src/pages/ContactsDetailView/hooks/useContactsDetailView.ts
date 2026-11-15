@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useParams } from 'react-router';
 import { ApiError } from '../../../api/client.ts';
 import { useContactQuery } from '../../../queries/contacts-queries.ts';
@@ -16,9 +15,6 @@ export function useContactsDetailView() {
   const contactId = parseContactId(id);
   const contactQuery = useContactQuery(contactId);
   const handleBack = useBackToContacts();
-  // The contact being edited, rather than a boolean: opening another contact (same route,
-  // so this page stays mounted) starts in view mode without an effect to reset it.
-  const [editingId, setEditingId] = useState<number | null>(null);
 
   const { data, error, isError, isFetching } = contactQuery;
 
@@ -35,16 +31,11 @@ export function useContactsDetailView() {
     contactData = { status: DETAIL_VIEW_STATUS.LOADING };
   }
 
-  const isEditing = contactId !== null && editingId === contactId;
-
   const handleRetry = () => void contactQuery.refetch();
-  const handleEdit = () => setEditingId(contactId);
 
   return {
     contactData,
-    isEditing,
     handleBack,
     handleRetry,
-    handleEdit,
   };
 }

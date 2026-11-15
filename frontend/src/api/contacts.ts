@@ -4,6 +4,7 @@ import type {
   Contact,
   ContactListResponse,
   ListContactsParams,
+  UpdateContactRequest,
 } from '../types/api.ts';
 import { apiClient } from './client.ts';
 
@@ -33,5 +34,10 @@ export async function bulkAssignTag(body: BulkAssignTagRequest): Promise<BulkAss
 
 export async function getContact(id: number): Promise<Contact> {
   const { data } = await apiClient.get<Contact>(`/api/contacts/${id}`);
+  return data;
+}
+
+export async function updateContact(id: number, body: UpdateContactRequest): Promise<Contact> {
+  const { data } = await apiClient.patch<Contact>(`/api/contacts/${id}`, body);
   return data;
 }

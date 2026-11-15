@@ -1,10 +1,16 @@
 import { keepPreviousData, skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { listCompanies } from '../api/companies.ts';
-import { bulkAssignTag, getContact, listContacts } from '../api/contacts.ts';
+import { bulkAssignTag, getContact, listContacts, updateContact } from '../api/contacts.ts';
 import { ApiError } from '../api/client.ts';
 import { listTags } from '../api/tags.ts';
 import { COMPANY_SUGGESTION_LIMIT } from '../constants/list.ts';
-import type { BulkAssignTagRequest, ListCompaniesParams, ListContactsParams } from '../types/api.ts';
+import type {
+  BulkAssignTagRequest,
+  Contact,
+  ListCompaniesParams,
+  ListContactsParams,
+  UpdateContactRequest,
+} from '../types/api.ts';
 
 /**
  * Every React Query key in the app comes from here, so both pages share cached data (e.g.
@@ -78,6 +84,34 @@ export function useContactQuery(id: number | null) {
     queryKey: queryKeys.contacts.detail(id),
     queryFn: id === null ? skipToken : () => getContact(id),
   });
+}
+
+/**
+ * Saves an edit (optimistic locking: the body carries the version it was based on). The saved
+ * contact goes straight into the detail cache, so the page shows it without waiting for a
+ * refetch; the lists (and later the activity feed) are refreshed because they show it too.
+ */
+export function useUpdateContactMutation(id: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: UpdateContactRequest) => updateContact(id, body),
+    onSuccess: (contact) => {
+      queryClient.setQueryData(queryKeys.contacts.detail(id), contact);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.contacts.all });
+    },
+    onError: (error) => {
+      // Deleted meanwhile: refetching the detail turns the page into "Contact not found".
+      if (error instanceof ApiError && error.code === 'NOT_FOUND') {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.contacts.detail(id) });
+      }
+    },
+  });
+}
+
+/** Puts a contact into the detail cache, e.g. the current one from a 409 ("Reload latest"). */
+export function useSetContactData() {
+  const queryClient = useQueryClient();
+  return (contact: Contact) => queryClient.setQueryData(queryKeys.contacts.detail(contact.id), contact);
 }
 
 export function useBulkAssignTagMutation() {

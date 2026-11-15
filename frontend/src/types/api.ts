@@ -79,6 +79,23 @@ export interface BulkAssignTagNotFoundDetails {
   missingContactIds?: number[];
 }
 
+/** The fields PATCH /api/contacts/:id can change. null clears a nullable field. */
+export interface ContactFields {
+  firstName: string;
+  lastName: string;
+  email: string | null;
+  phone: string | null;
+  company: string | null;
+}
+
+/** Body of PATCH /api/contacts/:id: the version last read, plus at least one changed field. */
+export type UpdateContactRequest = { version: number } & Partial<ContactFields>;
+
+/** `details` of a 409 VERSION_CONFLICT: the contact as it is now (someone else saved it). */
+export interface VersionConflictDetails {
+  current: Contact;
+}
+
 /** `details` of a 400 VALIDATION_ERROR (zod's flattened errors). */
 export interface ValidationErrorDetails {
   formErrors: string[];

@@ -150,7 +150,6 @@ export const LIST_VIEW_TEXT = {
   },
   TABLE: {
     LOADING: 'Loading contacts…',
-    EMPTY_VALUE: 'None',
     COPY_EMAIL: (email: string) => `Copy email ${email}`,
     COPY_PHONE: (phone: string) => `Copy phone ${phone}`,
   },

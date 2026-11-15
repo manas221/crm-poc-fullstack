@@ -1,7 +1,16 @@
-import { sql, type Expression, type ExpressionBuilder, type Kysely, type RawBuilder, type Selectable, type SqlBool } from 'kysely';
+import {
+  sql,
+  type Expression,
+  type ExpressionBuilder,
+  type Kysely,
+  type RawBuilder,
+  type Selectable,
+  type SqlBool,
+  type Updateable,
+} from 'kysely';
 import { db } from '../db/client.js';
 import type { ContactsTable, Database } from '../db/types.js';
-import type { ContactSort, SortOrder } from '../schemas/contact.schemas.js';
+import type { ContactSort, EditableContactField, SortOrder } from '../schemas/contact.schemas.js';
 import { escapeLike } from '../utils/like.js';
 
 /** Contact columns the API exposes. full_name / phone_digits exist only for search. */
@@ -113,17 +122,45 @@ export async function count(filters: ContactFilters): Promise<number> {
   return total;
 }
 
-export async function findById(id: number): Promise<ContactRow | undefined> {
-  return db.selectFrom('contacts').select(CONTACT_COLUMNS).where('id', '=', id).executeTakeFirst();
+/** Takes the executor so it can run inside a transaction. */
+export async function findById(id: number, executor: Kysely<Database> = db): Promise<ContactRow | undefined> {
+  return executor.selectFrom('contacts').select(CONTACT_COLUMNS).where('id', '=', id).executeTakeFirst();
+}
+
+export type ContactFieldValues = Pick<Updateable<ContactsTable>, EditableContactField>;
+
+/**
+ * The optimistic-lock update (CLAUDE.md §7): it only applies while the row still has the
+ * version the client read, and bumps it. undefined means 0 rows matched: the version was
+ * stale (or the contact is gone). Under READ COMMITTED a concurrent update of the same row
+ * makes this wait for it, then re-check the WHERE against the new version, so two editors
+ * with the same version can never both succeed.
+ */
+export async function updateIfVersion(
+  id: number,
+  version: number,
+  values: ContactFieldValues,
+  executor: Kysely<Database> = db,
+): Promise<ContactRow | undefined> {
+  return executor
+    .updateTable('contacts')
+    .set({ ...values, version: sql`version + 1`, updatedAt: sql`now()` })
+    .where('id', '=', id)
+    .where('version', '=', version)
+    .returning(CONTACT_COLUMNS)
+    .executeTakeFirst();
 }
 
 /** Tags for a page of contacts in one query. Kept separate from the page query so a JOIN
  * can't multiply rows and break LIMIT/OFFSET. */
-export async function findTagsByContactIds(contactIds: readonly number[]): Promise<TagRow[]> {
+export async function findTagsByContactIds(
+  contactIds: readonly number[],
+  executor: Kysely<Database> = db,
+): Promise<TagRow[]> {
   if (contactIds.length === 0) {
     return [];
   }
-  return db
+  return executor
     .selectFrom('contactTags as ct')
     .innerJoin('tags as t', 't.id', 'ct.tagId')
     .select(['ct.contactId', 't.id', 't.name'])

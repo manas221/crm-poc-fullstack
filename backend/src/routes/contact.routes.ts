@@ -9,3 +9,4 @@ contactRouter.get('/', contactController.listContacts);
 // contact id.
 contactRouter.post('/bulk/tags', contactTagController.bulkAssignTag);
 contactRouter.get('/:id', contactController.getContact);
+contactRouter.patch('/:id', contactController.updateContact);
