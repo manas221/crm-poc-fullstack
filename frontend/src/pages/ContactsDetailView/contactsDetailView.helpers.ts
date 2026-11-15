@@ -1,4 +1,5 @@
 import { ApiError } from '../../api/client.ts';
+import { CONTACT_TAG_ACTIONS } from '../../constants/contact.ts';
 import {
   EMAIL_PATTERN,
   MAX_COMPANY_LENGTH,
@@ -6,7 +7,13 @@ import {
   MAX_NAME_LENGTH,
   PHONE_PATTERN,
 } from '../../constants/contact.ts';
-import type { ContactFields, ValidationErrorDetails, VersionConflictDetails } from '../../types/api.ts';
+import type { ContactTagChange } from '../../queries/contacts-queries.ts';
+import type {
+  ContactFields,
+  ContactTagNotFoundDetails,
+  ValidationErrorDetails,
+  VersionConflictDetails,
+} from '../../types/api.ts';
 import {
   CONTACT_FIELD_KEYS,
   CONTACT_FIELD_LABELS,
@@ -22,6 +29,7 @@ import type {
   ContactFormValues,
   FailedContactStatus,
   SaveError,
+  TagChangeFailure,
 } from './contactsDetailView.types.ts';
 
 /**
@@ -179,4 +187,26 @@ export function getSaveError(error: unknown): SaveError {
     default:
       return { ...none, message: DETAIL_VIEW_TEXT.DETAILS.SAVE_FAILED };
   }
+}
+
+// ---------------------------------------------------------------------------------------
+// Tags
+
+/**
+ * What a failed add / remove shows under the tags. null when the contact itself is gone: the
+ * mutation refetches it, and the page becomes "Contact not found".
+ */
+export function getTagChangeFailure(error: unknown, { action, tag }: ContactTagChange): TagChangeFailure | null {
+  if (error instanceof ApiError && error.code === 'NOT_FOUND') {
+    const details = error.details as ContactTagNotFoundDetails | undefined;
+    if (details?.contactId !== undefined) {
+      return null;
+    }
+    return { message: DETAIL_VIEW_TEXT.TAGS.TAG_GONE(tag.name), canRetry: false };
+  }
+  const message =
+    action === CONTACT_TAG_ACTIONS.ADD
+      ? DETAIL_VIEW_TEXT.TAGS.ADD_FAILED(tag.name)
+      : DETAIL_VIEW_TEXT.TAGS.REMOVE_FAILED(tag.name);
+  return { message, canRetry: true };
 }

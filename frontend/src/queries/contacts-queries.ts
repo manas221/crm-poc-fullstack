@@ -1,14 +1,30 @@
-import { keepPreviousData, skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  skipToken,
+  useMutation,
+  useMutationState,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { listCompanies } from '../api/companies.ts';
-import { bulkAssignTag, getContact, listContacts, updateContact } from '../api/contacts.ts';
+import {
+  addContactTag,
+  bulkAssignTag,
+  getContact,
+  listContacts,
+  removeContactTag,
+  updateContact,
+} from '../api/contacts.ts';
 import { ApiError } from '../api/client.ts';
 import { listTags } from '../api/tags.ts';
+import { CONTACT_TAG_ACTIONS } from '../constants/contact.ts';
 import { COMPANY_SUGGESTION_LIMIT } from '../constants/list.ts';
 import type {
   BulkAssignTagRequest,
   Contact,
   ListCompaniesParams,
   ListContactsParams,
+  Tag,
   UpdateContactRequest,
 } from '../types/api.ts';
 
@@ -27,6 +43,7 @@ export const queryKeys = {
     list: (params: ListContactsParams) => [...queryKeys.contacts.lists(), params] as const,
     total: () => [...queryKeys.contacts.all, 'total'] as const,
     detail: (id: number | null) => [...queryKeys.contacts.all, 'detail', id] as const,
+    activities: (id: number) => [...queryKeys.contacts.all, 'activities', id] as const,
   },
   tags: {
     all: ['tags'] as const,
@@ -35,6 +52,11 @@ export const queryKeys = {
     all: ['companies'] as const,
     search: (params: ListCompaniesParams) => [...queryKeys.companies.all, params] as const,
   },
+};
+
+/** Keys of mutations whose in-flight calls a component reads back with useMutationState. */
+export const mutationKeys = {
+  contactTags: (contactId: number) => ['contactTags', contactId] as const,
 };
 
 // ---------------------------------------------------------------------------------------
@@ -105,6 +127,53 @@ export function useUpdateContactMutation(id: number) {
         void queryClient.invalidateQueries({ queryKey: queryKeys.contacts.detail(id) });
       }
     },
+  });
+}
+
+export type ContactTagAction = (typeof CONTACT_TAG_ACTIONS)[keyof typeof CONTACT_TAG_ACTIONS];
+
+/** One tag change on one contact: the mutation's variables. */
+export interface ContactTagChange {
+  action: ContactTagAction;
+  tag: Tag;
+}
+
+interface ContactTagMutationCallbacks {
+  /** Called for every failed change, not only the latest one (unlike mutate()'s own callbacks). */
+  onError?: (error: Error, change: ContactTagChange) => void;
+}
+
+/**
+ * Adds or removes one tag on a contact. Several can run at once (one per tag), and each stays
+ * pending until the contact has been refetched, so a tag never flickers out between "saved"
+ * and "shown". Refetching (rather than writing each response into the cache) also means
+ * responses arriving out of order can't leave an older tag list on screen.
+ */
+export function useContactTagMutation(contactId: number, { onError }: ContactTagMutationCallbacks = {}) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: mutationKeys.contactTags(contactId),
+    mutationFn: ({ action, tag }: ContactTagChange) =>
+      action === CONTACT_TAG_ACTIONS.ADD ? addContactTag(contactId, tag.id) : removeContactTag(contactId, tag.id),
+    // The detail (tags), its activity feed, and the lists' tag column all change.
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.contacts.all }),
+    onError: (error, change) => {
+      // The tag or the contact was deleted meanwhile: refresh both (a missing contact turns
+      // the page into "Contact not found").
+      if (error instanceof ApiError && error.code === 'NOT_FOUND') {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.tags.all });
+        void queryClient.invalidateQueries({ queryKey: queryKeys.contacts.detail(contactId) });
+      }
+      onError?.(error, change);
+    },
+  });
+}
+
+/** The tag changes on this contact that are still saving, oldest first. */
+export function usePendingContactTagChanges(contactId: number): ContactTagChange[] {
+  return useMutationState({
+    filters: { mutationKey: mutationKeys.contactTags(contactId), status: 'pending' },
+    select: (mutation) => mutation.state.variables as ContactTagChange,
   });
 }
 

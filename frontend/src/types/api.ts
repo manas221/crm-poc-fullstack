@@ -96,6 +96,15 @@ export interface VersionConflictDetails {
   current: Contact;
 }
 
+/**
+ * `details` of a 404 from the tag endpoints (contact-tag.service.ts): which one is missing,
+ * the contact or the tag.
+ */
+export interface ContactTagNotFoundDetails {
+  contactId?: number;
+  tagId?: number;
+}
+
 /** `details` of a 400 VALIDATION_ERROR (zod's flattened errors). */
 export interface ValidationErrorDetails {
   formErrors: string[];

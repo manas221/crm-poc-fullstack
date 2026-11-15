@@ -41,3 +41,15 @@ export async function updateContact(id: number, body: UpdateContactRequest): Pro
   const { data } = await apiClient.patch<Contact>(`/api/contacts/${id}`, body);
   return data;
 }
+
+/** Returns the contact with its tags. Safe to repeat: adding a tag it already has is a no-op. */
+export async function addContactTag(contactId: number, tagId: number): Promise<Contact> {
+  const { data } = await apiClient.post<Contact>(`/api/contacts/${contactId}/tags`, { tagId });
+  return data;
+}
+
+/** Returns the contact with its tags. Safe to repeat: removing a tag it doesn't have is a no-op. */
+export async function removeContactTag(contactId: number, tagId: number): Promise<Contact> {
+  const { data } = await apiClient.delete<Contact>(`/api/contacts/${contactId}/tags/${tagId}`);
+  return data;
+}

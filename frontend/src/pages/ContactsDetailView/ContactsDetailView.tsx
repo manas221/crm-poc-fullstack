@@ -1,6 +1,7 @@
 import { BackToContactsLink } from './components/BackToContactsLink';
 import { ContactDetails } from './components/ContactDetails';
 import { ContactHeader } from './components/ContactHeader';
+import { ContactTags } from './components/ContactTags';
 import { DetailCard } from './components/DetailCard';
 import { FailedContactScreens } from './components/FailedContactScreens';
 import { DETAIL_VIEW_STATUS, DETAIL_VIEW_TEXT } from './contactsDetailView.constants.ts';
@@ -26,8 +27,7 @@ export function ContactsDetailView() {
           <div className="space-y-6 lg:col-span-3">
             {/* Keyed by id: another contact (same route, page stays mounted) starts in view mode. */}
             <ContactDetails key={contactData.contact.id} contact={contactData.contact} />
-            {/* 5 · Tags */}
-            <DetailCard title={DETAIL_VIEW_TEXT.SECTIONS.TAGS} aside={DETAIL_VIEW_TEXT.SECTIONS.TAGS_AUTOSAVE} />
+            <ContactTags contact={contactData.contact} />
           </div>
           {/* 4 · Recent activity */}
           <div className="lg:col-span-2">

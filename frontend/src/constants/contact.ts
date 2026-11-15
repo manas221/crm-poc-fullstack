@@ -13,3 +13,9 @@ export const PHONE_PATTERN = /^[+]?[\d\s()-]{7,20}$/;
  * but not there comes back as a field error from the server instead.
  */
 export const EMAIL_PATTERN = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/;
+
+/** What a tag change on one contact does (useContactTagMutation). */
+export const CONTACT_TAG_ACTIONS = {
+  ADD: 'add',
+  REMOVE: 'remove',
+} as const;

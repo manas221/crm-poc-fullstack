@@ -154,3 +154,21 @@ export function UserIcon(props: IconProps) {
     </Icon>
   );
 }
+
+export function PlusIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 5v14" />
+      <path d="M5 12h14" />
+    </Icon>
+  );
+}
+
+/** A spinning arc (animate-spin), e.g. for something saving. */
+export function SpinnerIcon({ className = 'size-4', ...props }: IconProps) {
+  return (
+    <Icon className={`animate-spin ${className}`} {...props}>
+      <path d="M21 12a9 9 0 1 1-6.22-8.56" />
+    </Icon>
+  );
+}

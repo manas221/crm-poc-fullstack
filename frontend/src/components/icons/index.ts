@@ -11,7 +11,9 @@ export {
   ChevronUpIcon,
   CopyIcon,
   PencilIcon,
+  PlusIcon,
   SearchIcon,
+  SpinnerIcon,
   UserIcon,
   XIcon,
 } from './icons.tsx';

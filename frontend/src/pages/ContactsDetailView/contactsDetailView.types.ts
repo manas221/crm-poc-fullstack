@@ -1,4 +1,4 @@
-import type { Contact, ContactFields } from '../../types/api.ts';
+import type { Contact, ContactFields, Tag } from '../../types/api.ts';
 import type { DETAIL_VIEW_STATUS } from './contactsDetailView.constants.ts';
 
 /** What the page shows. Built by useContactsDetailView from the contact query. */
@@ -35,4 +35,25 @@ export interface SaveError {
   fieldErrors: ContactFormErrors;
   /** Shown above the form, e.g. "Couldn’t save changes." */
   message: string | null;
+}
+
+/** The tags the "Add tag" picker offers. Built by useContactTags from the tags query. */
+export type TagPickerData =
+  | { status: typeof DETAIL_VIEW_STATUS.LOADING }
+  | { status: typeof DETAIL_VIEW_STATUS.ERROR }
+  /** `available`: the tags the contact doesn't have (yet). `total`: how many tags exist at all. */
+  | { status: typeof DETAIL_VIEW_STATUS.READY; available: Tag[]; total: number };
+
+/** A tag shown on the contact: one it has, or one being added. */
+export interface ShownTag {
+  tag: Tag;
+  /** Being added or removed right now: shows a spinner instead of the remove button. */
+  isSaving: boolean;
+}
+
+/** The last tag change that failed, shown under the tags. */
+export interface TagChangeFailure {
+  message: string;
+  /** False when retrying can't help (the tag no longer exists). */
+  canRetry: boolean;
 }
