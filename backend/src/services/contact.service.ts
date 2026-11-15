@@ -36,11 +36,14 @@ function groupTagsByContact(rows: readonly TagRow[]): Map<number, Tag[]> {
  * and approximate counts at millions of rows). A page past the end returns empty data
  * with the real total, not a 404.
  */
-export async function listContacts({ page, limit, sort, order }: ListContactsQuery): Promise<ContactPage> {
+export async function listContacts({ page, limit, sort, order, q, company, tags }: ListContactsQuery): Promise<ContactPage> {
+  const filters = { q, company, tagIds: tags };
   const [rows, total] = await Promise.all([
-    contactRepository.findPage({ sort, order, limit, offset: (page - 1) * limit }),
-    contactRepository.count(),
+    contactRepository.findPage({ filters, sort, order, limit, offset: (page - 1) * limit }),
+    contactRepository.count(filters),
   ]);
+
+  // Every tag of each contact is returned, not only the ones matched by the tags filter.
 
   const tagRows = await contactRepository.findTagsByContactIds(rows.map((r) => r.id));
   const tagsByContact = groupTagsByContact(tagRows);
