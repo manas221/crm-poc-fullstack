@@ -2,6 +2,7 @@ import express, { type Express } from 'express';
 import cors from 'cors';
 import { config } from './config.js';
 import { errorHandler, notFoundHandler } from './errors/error-handler.js';
+import { companyRouter } from './routes/company.routes.js';
 import { contactRouter } from './routes/contact.routes.js';
 import { healthRouter } from './routes/health.routes.js';
 
@@ -14,6 +15,7 @@ export function createApp(): Express {
 
   app.use(healthRouter);
   app.use('/api/contacts', contactRouter);
+  app.use('/api/companies', companyRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
