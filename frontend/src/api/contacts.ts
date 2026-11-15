@@ -1,6 +1,7 @@
 import type {
   BulkAssignTagRequest,
   BulkAssignTagResponse,
+  Contact,
   ContactListResponse,
   ListContactsParams,
 } from '../types/api.ts';
@@ -27,5 +28,10 @@ export async function listContacts(params: ListContactsParams): Promise<ContactL
 
 export async function bulkAssignTag(body: BulkAssignTagRequest): Promise<BulkAssignTagResponse> {
   const { data } = await apiClient.post<BulkAssignTagResponse>('/api/contacts/bulk/tags', body);
+  return data;
+}
+
+export async function getContact(id: number): Promise<Contact> {
+  const { data } = await apiClient.get<Contact>(`/api/contacts/${id}`);
   return data;
 }

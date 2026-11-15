@@ -113,6 +113,10 @@ export async function count(filters: ContactFilters): Promise<number> {
   return total;
 }
 
+export async function findById(id: number): Promise<ContactRow | undefined> {
+  return db.selectFrom('contacts').select(CONTACT_COLUMNS).where('id', '=', id).executeTakeFirst();
+}
+
 /** Tags for a page of contacts in one query. Kept separate from the page query so a JOIN
  * can't multiply rows and break LIMIT/OFFSET. */
 export async function findTagsByContactIds(contactIds: readonly number[]): Promise<TagRow[]> {

@@ -3,6 +3,7 @@ import { Checkbox } from '../../../../../components/Checkbox';
 import { CopyButton } from '../../../../../components/CopyButton';
 import type { Contact } from '../../../../../types/api.ts';
 import { formatDate } from '../../../../../utils/format.ts';
+import { FROM_LIST_STATE } from '../../../../../utils/navigation.ts';
 import { LIST_VIEW_TEXT } from '../../../contactsListView.constants.ts';
 import type { ContactCellProps } from '../../../contactsListView.types.ts';
 import { EmptyValue } from './EmptyValue.tsx';
@@ -70,7 +71,13 @@ export function NameCell({ contact }: ContactCellProps) {
   const fullName = getFullName(contact);
   return (
     <td className={`${CELL} truncate`}>
-      <Link to={`/contacts/${contact.id}`} title={fullName} className="font-medium text-blue-600 hover:underline">
+      {/* The state lets the detail page's "Back to contacts" return to this exact list. */}
+      <Link
+        to={`/contacts/${contact.id}`}
+        state={FROM_LIST_STATE}
+        title={fullName}
+        className="font-medium text-blue-600 hover:underline"
+      >
         {fullName}
       </Link>
     </td>

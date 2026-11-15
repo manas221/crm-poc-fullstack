@@ -55,3 +55,15 @@ export const listContactsQuerySchema = z
   .strict();
 
 export type ListContactsQuery = z.infer<typeof listContactsQuerySchema>;
+
+// /api/contacts/:id. Digits only, so "1e3", "0x10", "5.0" and " 5" are rejected rather than
+// coerced into some other contact's id. Capped at the largest exact JS integer.
+export const contactIdParamsSchema = z.object({
+  id: z
+    .string()
+    .regex(/^[1-9]\d*$/, 'Contact id must be a positive integer')
+    .transform(Number)
+    .pipe(z.number().int().max(Number.MAX_SAFE_INTEGER)),
+});
+
+export type ContactIdParams = z.infer<typeof contactIdParamsSchema>;

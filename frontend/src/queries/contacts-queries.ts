@@ -1,6 +1,6 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { listCompanies } from '../api/companies.ts';
-import { bulkAssignTag, listContacts } from '../api/contacts.ts';
+import { bulkAssignTag, getContact, listContacts } from '../api/contacts.ts';
 import { ApiError } from '../api/client.ts';
 import { listTags } from '../api/tags.ts';
 import { COMPANY_SUGGESTION_LIMIT } from '../constants/list.ts';
@@ -20,7 +20,7 @@ export const queryKeys = {
     lists: () => [...queryKeys.contacts.all, 'list'] as const,
     list: (params: ListContactsParams) => [...queryKeys.contacts.lists(), params] as const,
     total: () => [...queryKeys.contacts.all, 'total'] as const,
-    detail: (id: number) => [...queryKeys.contacts.all, 'detail', id] as const,
+    detail: (id: number | null) => [...queryKeys.contacts.all, 'detail', id] as const,
   },
   tags: {
     all: ['tags'] as const,
@@ -69,6 +69,14 @@ export function useContactsTotalQuery() {
     // Sort doesn't affect the count, so it's left to the backend default.
     queryFn: () => listContacts({ page: 1, limit: 1 }),
     select: (response) => response.pagination.total,
+  });
+}
+
+/** One contact for the detail page. `null` (a malformed id in the URL) sends no request. */
+export function useContactQuery(id: number | null) {
+  return useQuery({
+    queryKey: queryKeys.contacts.detail(id),
+    queryFn: id === null ? skipToken : () => getContact(id),
   });
 }
 

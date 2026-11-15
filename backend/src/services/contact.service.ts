@@ -1,3 +1,4 @@
+import { notFound } from '../errors/app-error.js';
 import * as contactRepository from '../repositories/contact.repository.js';
 import type { ContactRow, TagRow } from '../repositories/contact.repository.js';
 import type { Tag } from '../repositories/tag.repository.js';
@@ -50,4 +51,14 @@ export async function listContacts({ page, limit, sort, order, q, company, tags 
     data: rows.map((row) => ({ ...row, tags: tagsByContact.get(row.id) ?? [] })),
     pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
   };
+}
+
+/** One contact with its tags (and its version, which an edit must send back). */
+export async function getContact(id: number): Promise<ContactWithTags> {
+  const row = await contactRepository.findById(id);
+  if (!row) {
+    throw notFound('Contact not found', { contactId: id });
+  }
+  const tagRows = await contactRepository.findTagsByContactIds([id]);
+  return { ...row, tags: tagRows.map(({ id: tagId, name }) => ({ id: tagId, name })) };
 }
