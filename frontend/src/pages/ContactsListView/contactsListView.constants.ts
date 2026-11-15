@@ -22,6 +22,19 @@ export const LIST_VIEW_ACTION_TYPES = {
   SEARCH: 'search',
   SORT: 'sort',
   CLEAR_FILTERS: 'clearFilters',
+  PAGE: 'page',
+  LIMIT: 'limit',
+} as const;
+
+/**
+ * Status of a data-driven part of the view (table, pagination footer), built by
+ * useContactsListView from the query state. Each part's data type is a union on `status`.
+ */
+export const LIST_VIEW_STATUS = {
+  LOADING: 'loading',
+  ERROR: 'error',
+  EMPTY: 'empty',
+  READY: 'ready',
 } as const;
 
 /**
@@ -51,6 +64,11 @@ export const LIST_VIEW_TEXT = {
     TITLE: 'No contacts yet',
     DESCRIPTION: 'Contacts appear here once they are added.',
   },
+  PAST_LAST_PAGE: {
+    TITLE: 'This page doesn’t exist',
+    DESCRIPTION: (formattedPageCount: string) => `This list only has ${formattedPageCount} pages.`,
+    GO_TO_LAST_PAGE: 'Go to last page',
+  },
   LOAD_ERROR: {
     MESSAGE: 'Couldn’t load contacts. Please try again.',
     RETRY: 'Retry',
@@ -58,6 +76,24 @@ export const LIST_VIEW_TEXT = {
   TABLE: {
     LOADING: 'Loading contacts…',
     EMPTY_VALUE: 'None',
+  },
+  PAGINATION: {
+    NAV_LABEL: 'Pagination',
+    ROWS_PER_PAGE: 'Rows per page',
+    SHOWING: (start: string, end: string, total: string) => `Showing ${start}–${end} of ${total}`,
+    SHOWING_NONE: (total: string) => `Showing 0 of ${total}`,
+    PAGE_OF: (page: string, pageCount: string) => `Page ${page} of ${pageCount}`,
+    /** The list failed to load, so the numbers are unknown. */
+    SHOWING_UNKNOWN: 'Showing — of —',
+    PAGE_UNKNOWN: 'Page — of —',
+    FIRST: 'First',
+    PREVIOUS: 'Previous',
+    NEXT: 'Next',
+    LAST: 'Last',
+    FIRST_ARIA_LABEL: 'First page',
+    PREVIOUS_ARIA_LABEL: 'Previous page',
+    NEXT_ARIA_LABEL: 'Next page',
+    LAST_ARIA_LABEL: 'Last page',
   },
 } as const;
 

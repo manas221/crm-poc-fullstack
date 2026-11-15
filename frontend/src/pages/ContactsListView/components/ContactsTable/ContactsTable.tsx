@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Contact, ContactSort, SortOrder } from '../../../../types/api.ts';
 import { cn } from '../../../../utils/cn.ts';
-import { CONTACT_TABLE_COLUMN_LABELS, LIST_VIEW_TEXT } from '../../contactsListView.constants.ts';
+import { CONTACT_TABLE_COLUMN_LABELS, LIST_VIEW_STATUS, LIST_VIEW_TEXT } from '../../contactsListView.constants.ts';
 import { COLUMNS } from './columns.ts';
 import { ContactRow } from './ContactRow.tsx';
 import { SkeletonRows } from './SkeletonRows.tsx';
@@ -9,10 +9,10 @@ import { SortableHeader } from './SortableHeader.tsx';
 
 /** What the table body shows. Built by useContactsListView from the query state. */
 export type ContactsTableData =
-  | { status: 'loading'; rowCount: number }
-  | { status: 'error' }
-  | { status: 'empty' }
-  | { status: 'ready'; contacts: Contact[]; isUpdating: boolean };
+  | { status: typeof LIST_VIEW_STATUS.LOADING; rowCount: number }
+  | { status: typeof LIST_VIEW_STATUS.ERROR }
+  | { status: typeof LIST_VIEW_STATUS.EMPTY }
+  | { status: typeof LIST_VIEW_STATUS.READY; contacts: Contact[]; isUpdating: boolean };
 
 interface ContactsTableProps {
   data: ContactsTableData;
@@ -24,7 +24,7 @@ interface ContactsTableProps {
 }
 
 export function ContactsTable({ data, emptyState, sort, order, onSort }: ContactsTableProps) {
-  const isBusy = data.status === 'loading' || (data.status === 'ready' && data.isUpdating);
+  const isBusy = data.status === LIST_VIEW_STATUS.LOADING || (data.status === LIST_VIEW_STATUS.READY && data.isUpdating);
 
   return (
     <div className="overflow-x-auto rounded-lg border border-gray-200">
@@ -56,17 +56,17 @@ export function ContactsTable({ data, emptyState, sort, order, onSort }: Contact
           className={cn(
             'divide-y divide-gray-100',
             // Previous page stays visible, dimmed, while the next one loads.
-            data.status === 'ready' && data.isUpdating && 'opacity-60 transition-opacity',
+            data.status === LIST_VIEW_STATUS.READY && data.isUpdating && 'opacity-60 transition-opacity',
           )}
         >
-          {data.status === 'loading' && <SkeletonRows count={data.rowCount} />}
-          {data.status === 'ready' && data.contacts.map((contact) => <ContactRow key={contact.id} contact={contact} />)}
-          {data.status === 'empty' && (
+          {data.status === LIST_VIEW_STATUS.LOADING && <SkeletonRows count={data.rowCount} />}
+          {data.status === LIST_VIEW_STATUS.READY && data.contacts.map((contact) => <ContactRow key={contact.id} contact={contact} />)}
+          {data.status === LIST_VIEW_STATUS.EMPTY && (
             <tr>
               <td colSpan={COLUMNS.length}>{emptyState}</td>
             </tr>
           )}
-          {data.status === 'error' && (
+          {data.status === LIST_VIEW_STATUS.ERROR && (
             // The error banner above explains it; the body stays empty, as in the mockup.
             <tr>
               <td colSpan={COLUMNS.length} className="h-64" />
@@ -74,7 +74,7 @@ export function ContactsTable({ data, emptyState, sort, order, onSort }: Contact
           )}
         </tbody>
       </table>
-      {data.status === 'loading' && (
+      {data.status === LIST_VIEW_STATUS.LOADING && (
         <p role="status" className="sr-only">
           {LIST_VIEW_TEXT.TABLE.LOADING}
         </p>

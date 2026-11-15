@@ -4,8 +4,10 @@ import { INITIAL_SORT_ORDER, LIST_VIEW_ACTION_TYPES, SORT_ORDER } from '../conta
 import { normalizeSearch, parseListParams, toSearchParams } from '../contactsListView.helpers.ts';
 import type { ListAction, ListParams } from '../contactsListView.types.ts';
 
-
-/** Any change to what is shown goes back to page 1, so you never land past the last page. */
+/**
+ * Any change to what is shown (search, filters, sort, page size) goes back to page 1, so you
+ * never land past the last page. Only PAGE moves between pages.
+ */
 export function listParamsReducer(state: ListParams, action: ListAction): ListParams {
   switch (action.type) {
     case LIST_VIEW_ACTION_TYPES.SEARCH: {
@@ -27,6 +29,11 @@ export function listParamsReducer(state: ListParams, action: ListAction): ListPa
     }
     case LIST_VIEW_ACTION_TYPES.CLEAR_FILTERS:
       return { ...state, q: undefined, company: undefined, tags: undefined, page: 1 };
+    case LIST_VIEW_ACTION_TYPES.PAGE:
+      return { ...state, page: Math.max(1, Math.floor(action.page)) };
+    case LIST_VIEW_ACTION_TYPES.LIMIT:
+      // A new page size reshuffles every page, so start again from the first one.
+      return action.limit === state.limit ? state : { ...state, limit: action.limit, page: 1 };
   }
 }
 

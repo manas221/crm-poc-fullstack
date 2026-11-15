@@ -67,3 +67,37 @@ export function ChevronDownIcon(props: IconProps) {
     </Icon>
   );
 }
+
+export function ChevronLeftIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="m15 18-6-6 6-6" />
+    </Icon>
+  );
+}
+
+export function ChevronRightIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="m9 18 6-6-6-6" />
+    </Icon>
+  );
+}
+
+export function ChevronDoubleLeftIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="m11 17-5-5 5-5" />
+      <path d="m18 17-5-5 5-5" />
+    </Icon>
+  );
+}
+
+export function ChevronDoubleRightIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="m6 17 5-5-5-5" />
+      <path d="m13 17 5-5-5-5" />
+    </Icon>
+  );
+}

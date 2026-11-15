@@ -101,3 +101,8 @@ export function toSearchParams(params: ListParams): URLSearchParams {
 export function hasActiveFilters(params: ListParams): boolean {
   return Boolean(params.q || params.company || (params.tags && params.tags.length > 0));
 }
+
+/** Number of pages for `total` rows. An empty list still has one (empty) page: "Page 1 of 1". */
+export function getPageCount(total: number, limit: number): number {
+  return Math.max(1, Math.ceil(total / limit));
+}

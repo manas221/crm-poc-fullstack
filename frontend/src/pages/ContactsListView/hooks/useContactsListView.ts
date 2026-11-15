@@ -1,8 +1,9 @@
 import { useContactsQuery, useContactsTotalQuery } from '../../../queries/contacts-queries.ts';
 import type { ContactSort } from '../../../types/api.ts';
 import type { ContactsTableData } from '../components/ContactsTable';
-import { LIST_VIEW_ACTION_TYPES } from '../contactsListView.constants.ts';
-import { hasActiveFilters } from '../contactsListView.helpers.ts';
+import type { PaginationFooterData } from '../components/PaginationFooter';
+import { LIST_VIEW_ACTION_TYPES, LIST_VIEW_STATUS } from '../contactsListView.constants.ts';
+import { getPageCount, hasActiveFilters } from '../contactsListView.helpers.ts';
 import { useListParams } from './useListParams.ts';
 
 /**
@@ -18,31 +19,57 @@ export function useContactsListView() {
   const { data, isError, isFetching, isPlaceholderData } = contactsQuery;
 
   let tableData: ContactsTableData;
+  let footerData: PaginationFooterData;
   if (data) {
     tableData =
       data.data.length > 0
-        ? { status: 'ready', contacts: data.data, isUpdating: isPlaceholderData }
-        : { status: 'empty' };
+        ? { status: LIST_VIEW_STATUS.READY, contacts: data.data, isUpdating: isPlaceholderData }
+        : { status: LIST_VIEW_STATUS.EMPTY };
+    // Page count from the total and the *requested* limit: while a new page size loads, the
+    // previous response (kept as placeholder) still carries the old size's totalPages.
+    footerData = {
+      status: LIST_VIEW_STATUS.READY,
+      total: data.pagination.total,
+      pageCount: getPageCount(data.pagination.total, params.limit),
+    };
   } else if (isError && !isFetching) {
-    tableData = { status: 'error' };
+    tableData = { status: LIST_VIEW_STATUS.ERROR };
+    footerData = { status: LIST_VIEW_STATUS.ERROR };
   } else {
     // First load, a new search/filter/sort (no placeholder rows), or retrying after an error.
-    tableData = { status: 'loading', rowCount: params.limit };
+    tableData = { status: LIST_VIEW_STATUS.LOADING, rowCount: params.limit };
+    footerData = { status: LIST_VIEW_STATUS.LOADING };
   }
+
+  // An old or hand-edited link (?page=9999): the list has rows, just not on this page.
+  const isPastLastPage =
+    footerData.status === LIST_VIEW_STATUS.READY && footerData.total > 0 && params.page > footerData.pageCount;
 
   const handleSearch = (q: string) => onAction({ type: LIST_VIEW_ACTION_TYPES.SEARCH, q });
   const handleSort = (sort: ContactSort) => onAction({ type: LIST_VIEW_ACTION_TYPES.SORT, sort });
   const handleClearFilters = () => onAction({ type: LIST_VIEW_ACTION_TYPES.CLEAR_FILTERS });
+  const handlePageChange = (page: number) => onAction({ type: LIST_VIEW_ACTION_TYPES.PAGE, page });
+  const handleLimitChange = (limit: number) => onAction({ type: LIST_VIEW_ACTION_TYPES.LIMIT, limit });
+  const handleGoToLastPage = () => {
+    if (footerData.status === LIST_VIEW_STATUS.READY) {
+      handlePageChange(footerData.pageCount);
+    }
+  };
   const handleRetry = () => void contactsQuery.refetch();
 
   return {
     params,
     total: totalQuery.data,
     tableData,
+    footerData,
     hasFilters: hasActiveFilters(params),
+    isPastLastPage,
     handleSearch,
     handleSort,
     handleClearFilters,
+    handlePageChange,
+    handleLimitChange,
+    handleGoToLastPage,
     handleRetry,
   };
 }

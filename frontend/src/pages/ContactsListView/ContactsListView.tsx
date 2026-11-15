@@ -4,15 +4,37 @@ import { EmptyState } from '../../components/EmptyState';
 import { SearchIcon } from '../../components/icons';
 import { formatNumber } from '../../utils/format.ts';
 import { ContactsTable } from './components/ContactsTable';
-import { LIST_VIEW_TEXT } from './contactsListView.constants.ts';
+import { PaginationFooter } from './components/PaginationFooter';
 import { SearchInput } from './components/SearchInput';
+import { LIST_VIEW_STATUS, LIST_VIEW_TEXT } from './contactsListView.constants.ts';
 import { useContactsListView } from './hooks/useContactsListView.ts';
 
 export function ContactsListView() {
-  const { params, total, tableData, hasFilters, handleSearch, handleSort, handleClearFilters, handleRetry } =
-    useContactsListView();
+  const {
+    params,
+    total,
+    tableData,
+    footerData,
+    hasFilters,
+    isPastLastPage,
+    handleSearch,
+    handleSort,
+    handleClearFilters,
+    handlePageChange,
+    handleLimitChange,
+    handleGoToLastPage,
+    handleRetry,
+  } = useContactsListView();
 
-  const emptyState = hasFilters ? (
+  const emptyState = isPastLastPage ? (
+    <EmptyState
+      title={LIST_VIEW_TEXT.PAST_LAST_PAGE.TITLE}
+      description={LIST_VIEW_TEXT.PAST_LAST_PAGE.DESCRIPTION(
+        formatNumber(footerData.status === LIST_VIEW_STATUS.READY ? footerData.pageCount : 0),
+      )}
+      action={<Button onClick={handleGoToLastPage}>{LIST_VIEW_TEXT.PAST_LAST_PAGE.GO_TO_LAST_PAGE}</Button>}
+    />
+  ) : hasFilters ? (
     <EmptyState
       icon={<SearchIcon className="size-8" />}
       title={LIST_VIEW_TEXT.NO_RESULTS.TITLE}
@@ -36,7 +58,7 @@ export function ContactsListView() {
         <SearchInput value={params.q ?? ''} onSearch={handleSearch} />
       </div>
 
-      {tableData.status === 'error' && (
+      {tableData.status === LIST_VIEW_STATUS.ERROR && (
         <Alert
           variant="error"
           action={
@@ -55,6 +77,14 @@ export function ContactsListView() {
         sort={params.sort}
         order={params.order}
         onSort={handleSort}
+      />
+
+      <PaginationFooter
+        data={footerData}
+        page={params.page}
+        limit={params.limit}
+        onPageChange={handlePageChange}
+        onLimitChange={handleLimitChange}
       />
     </section>
   );

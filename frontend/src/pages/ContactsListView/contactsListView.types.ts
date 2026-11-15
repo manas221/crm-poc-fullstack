@@ -9,7 +9,9 @@ export type ListViewActionType = (typeof LIST_VIEW_ACTION_TYPES)[keyof typeof LI
 export type ListAction =
   | { type: typeof LIST_VIEW_ACTION_TYPES.SEARCH; q: string }
   | { type: typeof LIST_VIEW_ACTION_TYPES.SORT; sort: ContactSort }
-  | { type: typeof LIST_VIEW_ACTION_TYPES.CLEAR_FILTERS };
+  | { type: typeof LIST_VIEW_ACTION_TYPES.CLEAR_FILTERS }
+  | { type: typeof LIST_VIEW_ACTION_TYPES.PAGE; page: number }
+  | { type: typeof LIST_VIEW_ACTION_TYPES.LIMIT; limit: number };
 
 export type ContactTableColumnKey = (typeof CONTACT_TABLE_COLUMN_KEYS)[keyof typeof CONTACT_TABLE_COLUMN_KEYS];
 
