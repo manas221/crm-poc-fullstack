@@ -1,4 +1,5 @@
 import { useContactsQuery, useContactsTotalQuery } from '../../../queries/contacts-queries.ts';
+import type { ContactSort } from '../../../types/api.ts';
 import type { ContactsTableData } from '../components/ContactsTable';
 import { LIST_VIEW_ACTION_TYPES } from '../contactsListView.constants.ts';
 import { hasActiveFilters } from '../contactsListView.helpers.ts';
@@ -29,15 +30,19 @@ export function useContactsListView() {
     tableData = { status: 'loading', rowCount: params.limit };
   }
 
+  const handleSearch = (q: string) => onAction({ type: LIST_VIEW_ACTION_TYPES.SEARCH, q });
+  const handleSort = (sort: ContactSort) => onAction({ type: LIST_VIEW_ACTION_TYPES.SORT, sort });
+  const handleClearFilters = () => onAction({ type: LIST_VIEW_ACTION_TYPES.CLEAR_FILTERS });
+  const handleRetry = () => void contactsQuery.refetch();
+
   return {
     params,
     total: totalQuery.data,
     tableData,
     hasFilters: hasActiveFilters(params),
-    actions: {
-      search: (q: string) => onAction({ type: LIST_VIEW_ACTION_TYPES.SEARCH, q }),
-      clearFilters: () => onAction({ type: LIST_VIEW_ACTION_TYPES.CLEAR_FILTERS }),
-      retry: () => void contactsQuery.refetch(),
-    },
+    handleSearch,
+    handleSort,
+    handleClearFilters,
+    handleRetry,
   };
 }

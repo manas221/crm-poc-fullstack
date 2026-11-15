@@ -1,10 +1,37 @@
+import type { ContactSort, SortOrder } from '../../types/api.ts';
 import type { ContactTableColumnKey } from './contactsListView.types.ts';
+
+/** Sort values the API accepts (mirror the backend allowlist in contact.schemas.ts). */
+export const CONTACT_SORT_KEYS = {
+  NAME: 'name',
+  CREATED_AT: 'createdAt',
+} as const satisfies Record<string, ContactSort>;
+
+export const SORT_ORDER = {
+  ASC: 'asc',
+  DESC: 'desc',
+} as const satisfies Record<string, SortOrder>;
+
+export const CONTACT_SORTS: readonly ContactSort[] = Object.values(CONTACT_SORT_KEYS);
+export const SORT_ORDERS: readonly SortOrder[] = Object.values(SORT_ORDER);
+export const DEFAULT_SORT: ContactSort = CONTACT_SORT_KEYS.CREATED_AT;
+export const DEFAULT_ORDER: SortOrder = SORT_ORDER.DESC;
 
 /** Action types for the list view's URL params reducer (listParamsReducer in hooks/useListParams.ts). */
 export const LIST_VIEW_ACTION_TYPES = {
   SEARCH: 'search',
+  SORT: 'sort',
   CLEAR_FILTERS: 'clearFilters',
 } as const;
+
+/**
+ * Direction a column starts in when you switch to it: names A→Z, dates newest first.
+ * Clicking the column again flips it.
+ */
+export const INITIAL_SORT_ORDER: Record<ContactSort, SortOrder> = {
+  [CONTACT_SORT_KEYS.NAME]: SORT_ORDER.ASC,
+  [CONTACT_SORT_KEYS.CREATED_AT]: SORT_ORDER.DESC,
+};
 
 /** User-facing text of the list view, in one place. */
 export const LIST_VIEW_TEXT = {

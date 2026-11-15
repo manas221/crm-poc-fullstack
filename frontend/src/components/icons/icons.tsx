@@ -41,3 +41,29 @@ export function AlertCircleIcon(props: IconProps) {
     </Icon>
   );
 }
+
+/** Unsorted column: both directions available. */
+export function ChevronUpDownIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="m7 15 5 5 5-5" />
+      <path d="m7 9 5-5 5 5" />
+    </Icon>
+  );
+}
+
+export function ChevronUpIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="m18 15-6-6-6 6" />
+    </Icon>
+  );
+}
+
+export function ChevronDownIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="m6 9 6 6 6-6" />
+    </Icon>
+  );
+}

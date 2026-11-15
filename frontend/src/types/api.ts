@@ -46,8 +46,9 @@ export type SortOrder = 'asc' | 'desc';
 export interface ListContactsParams {
   page: number;
   limit: number;
-  sort: ContactSort;
-  order: SortOrder;
+  /** Optional, like the backend: it defaults to createdAt / desc. */
+  sort?: ContactSort;
+  order?: SortOrder;
   q?: string;
   company?: string;
   tags?: number[];

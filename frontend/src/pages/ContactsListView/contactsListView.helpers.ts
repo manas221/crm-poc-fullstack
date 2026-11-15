@@ -1,15 +1,12 @@
 import {
-  CONTACT_SORTS,
-  DEFAULT_ORDER,
   DEFAULT_PAGE_SIZE,
-  DEFAULT_SORT,
   MAX_COMPANY_LENGTH,
   MAX_SEARCH_LENGTH,
   MAX_TAG_FILTER,
   MIN_SEARCH_LENGTH,
   PAGE_SIZE_OPTIONS,
-  SORT_ORDERS,
 } from '../../constants/list.ts';
+import { CONTACT_SORTS, DEFAULT_ORDER, DEFAULT_SORT, SORT_ORDERS } from './contactsListView.constants.ts';
 import type { ContactSort, SortOrder } from '../../types/api.ts';
 import type { ListParams } from './contactsListView.types.ts';
 

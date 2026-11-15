@@ -1,1 +1,1 @@
-export { AlertCircleIcon, SearchIcon } from './icons.tsx';
+export { AlertCircleIcon, ChevronDownIcon, ChevronUpDownIcon, ChevronUpIcon, SearchIcon } from './icons.tsx';

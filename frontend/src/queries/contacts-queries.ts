@@ -2,7 +2,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { listCompanies } from '../api/companies.ts';
 import { bulkAssignTag, listContacts } from '../api/contacts.ts';
 import { listTags } from '../api/tags.ts';
-import { COMPANY_SUGGESTION_LIMIT, DEFAULT_ORDER, DEFAULT_SORT } from '../constants/list.ts';
+import { COMPANY_SUGGESTION_LIMIT } from '../constants/list.ts';
 import type { BulkAssignTagRequest, ListCompaniesParams, ListContactsParams } from '../types/api.ts';
 
 /**
@@ -65,7 +65,8 @@ export function useContactsQuery(params: ListContactsParams) {
 export function useContactsTotalQuery() {
   return useQuery({
     queryKey: queryKeys.contacts.total(),
-    queryFn: () => listContacts({ page: 1, limit: 1, sort: DEFAULT_SORT, order: DEFAULT_ORDER }),
+    // Sort doesn't affect the count, so it's left to the backend default.
+    queryFn: () => listContacts({ page: 1, limit: 1 }),
     select: (response) => response.pagination.total,
   });
 }

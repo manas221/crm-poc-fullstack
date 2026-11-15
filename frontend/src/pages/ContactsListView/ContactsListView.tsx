@@ -9,14 +9,15 @@ import { SearchInput } from './components/SearchInput';
 import { useContactsListView } from './hooks/useContactsListView.ts';
 
 export function ContactsListView() {
-  const { params, total, tableData, hasFilters, actions } = useContactsListView();
+  const { params, total, tableData, hasFilters, handleSearch, handleSort, handleClearFilters, handleRetry } =
+    useContactsListView();
 
   const emptyState = hasFilters ? (
     <EmptyState
       icon={<SearchIcon className="size-8" />}
       title={LIST_VIEW_TEXT.NO_RESULTS.TITLE}
       description={LIST_VIEW_TEXT.NO_RESULTS.DESCRIPTION}
-      action={<Button onClick={actions.clearFilters}>{LIST_VIEW_TEXT.NO_RESULTS.CLEAR_FILTERS}</Button>}
+      action={<Button onClick={handleClearFilters}>{LIST_VIEW_TEXT.NO_RESULTS.CLEAR_FILTERS}</Button>}
     />
   ) : (
     <EmptyState title={LIST_VIEW_TEXT.NO_CONTACTS.TITLE} description={LIST_VIEW_TEXT.NO_CONTACTS.DESCRIPTION} />
@@ -32,14 +33,14 @@ export function ContactsListView() {
       </header>
 
       <div className="flex flex-wrap items-center gap-3">
-        <SearchInput value={params.q ?? ''} onSearch={actions.search} />
+        <SearchInput value={params.q ?? ''} onSearch={handleSearch} />
       </div>
 
       {tableData.status === 'error' && (
         <Alert
           variant="error"
           action={
-            <Button variant="danger-outline" onClick={actions.retry}>
+            <Button variant="danger-outline" onClick={handleRetry}>
               {LIST_VIEW_TEXT.LOAD_ERROR.RETRY}
             </Button>
           }
@@ -48,7 +49,13 @@ export function ContactsListView() {
         </Alert>
       )}
 
-      <ContactsTable data={tableData} emptyState={emptyState} />
+      <ContactsTable
+        data={tableData}
+        emptyState={emptyState}
+        sort={params.sort}
+        order={params.order}
+        onSort={handleSort}
+      />
     </section>
   );
 }

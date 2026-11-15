@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router';
-import { LIST_VIEW_ACTION_TYPES } from '../contactsListView.constants.ts';
+import { INITIAL_SORT_ORDER, LIST_VIEW_ACTION_TYPES, SORT_ORDER } from '../contactsListView.constants.ts';
 import { normalizeSearch, parseListParams, toSearchParams } from '../contactsListView.helpers.ts';
 import type { ListAction, ListParams } from '../contactsListView.types.ts';
 
@@ -14,6 +14,16 @@ export function listParamsReducer(state: ListParams, action: ListAction): ListPa
         return state; // e.g. a trailing space: same search, so keep the current page
       }
       return { ...state, q: q || undefined, page: 1 };
+    }
+    case LIST_VIEW_ACTION_TYPES.SORT: {
+      // Same column again: flip the direction. Another column: start in its natural direction.
+      const order =
+        action.sort === state.sort
+          ? state.order === SORT_ORDER.ASC
+            ? SORT_ORDER.DESC
+            : SORT_ORDER.ASC
+          : INITIAL_SORT_ORDER[action.sort];
+      return { ...state, sort: action.sort, order, page: 1 };
     }
     case LIST_VIEW_ACTION_TYPES.CLEAR_FILTERS:
       return { ...state, q: undefined, company: undefined, tags: undefined, page: 1 };
