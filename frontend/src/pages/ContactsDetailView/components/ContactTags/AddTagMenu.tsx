@@ -40,7 +40,8 @@ export function AddTagMenu({ data, onAdd, onRetry }: AddTagMenuProps) {
           <div aria-busy="true">
             {SKELETON_WIDTHS.map((width) => (
               <div key={width} className="flex items-center gap-3 px-3 py-2.5">
-                <Skeleton className="size-2 rounded-full" />
+                {/* Not <Skeleton>: its fixed h-3 would win over size-2 (cn doesn't merge classes). */}
+                <div aria-hidden="true" className="size-2 shrink-0 animate-pulse rounded-full bg-gray-200" />
                 <Skeleton className={width} />
               </div>
             ))}

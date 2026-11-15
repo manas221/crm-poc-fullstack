@@ -1,5 +1,5 @@
 import { ApiError } from '../../api/client.ts';
-import { CONTACT_TAG_ACTIONS } from '../../constants/contact.ts';
+import { ACTIVITY_TYPES, CONTACT_TAG_ACTIONS } from '../../constants/contact.ts';
 import {
   EMAIL_PATTERN,
   MAX_COMPANY_LENGTH,
@@ -9,8 +9,10 @@ import {
 } from '../../constants/contact.ts';
 import type { ContactTagChange } from '../../queries/contacts-queries.ts';
 import type {
+  Activity,
   ContactFields,
   ContactTagNotFoundDetails,
+  FieldChange,
   ValidationErrorDetails,
   VersionConflictDetails,
 } from '../../types/api.ts';
@@ -22,6 +24,7 @@ import {
   DETAIL_VIEW_TEXT,
 } from './contactsDetailView.constants.ts';
 import type {
+  ActivityDescription,
   ConflictRow,
   ContactDetailData,
   ContactField,
@@ -209,4 +212,45 @@ export function getTagChangeFailure(error: unknown, { action, tag }: ContactTagC
       ? DETAIL_VIEW_TEXT.TAGS.ADD_FAILED(tag.name)
       : DETAIL_VIEW_TEXT.TAGS.REMOVE_FAILED(tag.name);
   return { message, canRetry: true };
+}
+
+// ---------------------------------------------------------------------------------------
+// Activity
+
+const ACTIVITY_TEXT = DETAIL_VIEW_TEXT.ACTIVITY;
+
+function describeChange(field: ContactField, { from, to }: FieldChange): string {
+  const label = CONTACT_FIELD_LABELS[field].toLowerCase();
+  if (from === null && to !== null) {
+    return ACTIVITY_TEXT.FIELD_SET(label, to);
+  }
+  if (to === null) {
+    return ACTIVITY_TEXT.FIELD_CLEARED(label);
+  }
+  return ACTIVITY_TEXT.FIELD_CHANGED(label, from ?? '', to);
+}
+
+/**
+ * An activity entry as text. For an edit, the first changed field (in form order) is spelled
+ * out and the rest are just named, as in the mockup: "email changed from a@x.com to b@x.com,
+ * phone changed". That keeps an edit of many fields to a line or two.
+ */
+export function describeActivity(activity: Activity): ActivityDescription {
+  switch (activity.type) {
+    case ACTIVITY_TYPES.TAG_ADDED: {
+      const { tagName, bulk } = activity.payload;
+      return { title: ACTIVITY_TEXT.TAG_ADDED, detail: bulk ? ACTIVITY_TEXT.BULK(tagName) : tagName, tone: 'tagAdded' };
+    }
+    case ACTIVITY_TYPES.TAG_REMOVED:
+      return { title: ACTIVITY_TEXT.TAG_REMOVED, detail: activity.payload.tagName, tone: 'tagRemoved' };
+    case ACTIVITY_TYPES.CONTACT_UPDATED: {
+      const { changes } = activity.payload;
+      const fields = CONTACT_FIELDS.filter((field) => changes[field] !== undefined);
+      const parts = fields.map((field, index) => {
+        const change = changes[field] as FieldChange;
+        return index === 0 ? describeChange(field, change) : ACTIVITY_TEXT.FIELD_CHANGED_SHORT(CONTACT_FIELD_LABELS[field].toLowerCase());
+      });
+      return { title: ACTIVITY_TEXT.CONTACT_UPDATED, detail: parts.length > 0 ? parts.join(', ') : null, tone: 'updated' };
+    }
+  }
 }

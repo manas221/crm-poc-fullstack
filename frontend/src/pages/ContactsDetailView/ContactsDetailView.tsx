@@ -1,10 +1,10 @@
 import { BackToContactsLink } from './components/BackToContactsLink';
+import { ContactActivity } from './components/ContactActivity';
 import { ContactDetails } from './components/ContactDetails';
 import { ContactHeader } from './components/ContactHeader';
 import { ContactTags } from './components/ContactTags';
-import { DetailCard } from './components/DetailCard';
 import { FailedContactScreens } from './components/FailedContactScreens';
-import { DETAIL_VIEW_STATUS, DETAIL_VIEW_TEXT } from './contactsDetailView.constants.ts';
+import { DETAIL_VIEW_STATUS } from './contactsDetailView.constants.ts';
 import { isFailedContactData } from './contactsDetailView.helpers.ts';
 import { useContactsDetailView } from './hooks/useContactsDetailView.ts';
 
@@ -29,9 +29,8 @@ export function ContactsDetailView() {
             <ContactDetails key={contactData.contact.id} contact={contactData.contact} />
             <ContactTags contact={contactData.contact} />
           </div>
-          {/* 4 · Recent activity */}
           <div className="lg:col-span-2">
-            <DetailCard title={DETAIL_VIEW_TEXT.SECTIONS.ACTIVITY} />
+            <ContactActivity contactId={contactData.contact.id} />
           </div>
         </div>
       )}

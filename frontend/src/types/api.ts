@@ -105,6 +105,35 @@ export interface ContactTagNotFoundDetails {
   tagId?: number;
 }
 
+export type ActivityType = 'CONTACT_UPDATED' | 'TAG_ADDED' | 'TAG_REMOVED';
+
+export interface FieldChange {
+  from: string | null;
+  to: string | null;
+}
+
+interface ActivityBase {
+  id: number;
+  contactId: number;
+  createdAt: string; // ISO 8601, UTC
+}
+
+/**
+ * One entry of GET /api/contacts/:id/activities (backend/src/controllers/activity.dto.ts).
+ * `payload` depends on `type`.
+ */
+export type Activity =
+  | (ActivityBase & {
+      type: 'CONTACT_UPDATED';
+      /** Only the fields that changed. */
+      payload: { changes: Partial<Record<keyof ContactFields, FieldChange>> };
+    })
+  | (ActivityBase & {
+      type: 'TAG_ADDED' | 'TAG_REMOVED';
+      /** `bulk`: added by "Assign tag" on the list. */
+      payload: { tagId: number; tagName: string; bulk?: true };
+    });
+
 /** `details` of a 400 VALIDATION_ERROR (zod's flattened errors). */
 export interface ValidationErrorDetails {
   formErrors: string[];

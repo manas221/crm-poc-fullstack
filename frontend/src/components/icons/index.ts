@@ -2,6 +2,7 @@ export {
   AlertCircleIcon,
   ArrowLeftIcon,
   CheckIcon,
+  ClockIcon,
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
   ChevronDownIcon,
@@ -14,6 +15,7 @@ export {
   PlusIcon,
   SearchIcon,
   SpinnerIcon,
+  TagIcon,
   UserIcon,
   XIcon,
 } from './icons.tsx';

@@ -1,8 +1,10 @@
 import type {
+  Activity,
   BulkAssignTagRequest,
   BulkAssignTagResponse,
   Contact,
   ContactListResponse,
+  DataResponse,
   ListContactsParams,
   UpdateContactRequest,
 } from '../types/api.ts';
@@ -52,4 +54,12 @@ export async function addContactTag(contactId: number, tagId: number): Promise<C
 export async function removeContactTag(contactId: number, tagId: number): Promise<Contact> {
   const { data } = await apiClient.delete<Contact>(`/api/contacts/${contactId}/tags/${tagId}`);
   return data;
+}
+
+/** The contact's newest activity entries, newest first. */
+export async function listContactActivities(contactId: number, limit: number): Promise<Activity[]> {
+  const { data } = await apiClient.get<DataResponse<Activity>>(`/api/contacts/${contactId}/activities`, {
+    params: { limit },
+  });
+  return data.data;
 }

@@ -46,8 +46,8 @@ export const DETAIL_VIEW_TEXT = {
   },
   CONFLICT: {
     TITLE: 'This contact was changed by someone else',
-    /** `when` is e.g. "1 min ago". */
-    DESCRIPTION: (when: string) => `Someone else saved this contact ${when}, while you were editing.`,
+    /** `when` is e.g. "16 Nov 2026, 10:42". */
+    DESCRIPTION: (when: string) => `Someone else saved this contact on ${when}, while you were editing.`,
     FIELDS_DIFFER: 'These fields differ:',
     NO_DIFFERENCES: 'Their saved values already match your changes.',
     FIELD: 'Field',
@@ -71,6 +71,21 @@ export const DETAIL_VIEW_TEXT = {
     ADD_FAILED: (name: string) => `Couldn’t add “${name}”. Please try again.`,
     REMOVE_FAILED: (name: string) => `Couldn’t remove “${name}”. Please try again.`,
     TAG_GONE: (name: string) => `“${name}” no longer exists.`,
+  },
+  ACTIVITY: {
+    TAG_ADDED: 'Tag added',
+    TAG_REMOVED: 'Tag removed',
+    CONTACT_UPDATED: 'Contact updated',
+    BULK: (tagName: string) => `${tagName} (bulk)`,
+    /** `field` is lowercase, e.g. "email". */
+    FIELD_CHANGED: (field: string, from: string, to: string) => `${field} changed from ${from} to ${to}`,
+    FIELD_SET: (field: string, to: string) => `${field} set to ${to}`,
+    FIELD_CLEARED: (field: string) => `${field} cleared`,
+    FIELD_CHANGED_SHORT: (field: string) => `${field} changed`,
+    LOADING: 'Loading activity…',
+    LOAD_ERROR: 'Couldn’t load activity.',
+    RETRY: 'Retry',
+    EMPTY: 'No activity yet. Changes to this contact will appear here.',
   },
   SECTIONS: {
     DETAILS: 'Details',

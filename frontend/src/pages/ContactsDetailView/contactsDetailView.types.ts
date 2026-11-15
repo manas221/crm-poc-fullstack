@@ -1,4 +1,4 @@
-import type { Contact, ContactFields, Tag } from '../../types/api.ts';
+import type { Activity, Contact, ContactFields, Tag } from '../../types/api.ts';
 import type { DETAIL_VIEW_STATUS } from './contactsDetailView.constants.ts';
 
 /** What the page shows. Built by useContactsDetailView from the contact query. */
@@ -56,4 +56,21 @@ export interface TagChangeFailure {
   message: string;
   /** False when retrying can't help (the tag no longer exists). */
   canRetry: boolean;
+}
+
+/** What "Recent activity" shows. Built by useContactActivity from the activities query. */
+export type ActivityFeedData =
+  | { status: typeof DETAIL_VIEW_STATUS.LOADING }
+  | { status: typeof DETAIL_VIEW_STATUS.ERROR }
+  /** `activities` may be empty (mockup D9). */
+  | { status: typeof DETAIL_VIEW_STATUS.READY; activities: Activity[] };
+
+/** Which icon an entry gets: a blue tag, a grey tag, or a pencil. */
+export type ActivityTone = 'tagAdded' | 'tagRemoved' | 'updated';
+
+/** One timeline entry as text: "<title>: <detail>". */
+export interface ActivityDescription {
+  title: string;
+  detail: string | null;
+  tone: ActivityTone;
 }

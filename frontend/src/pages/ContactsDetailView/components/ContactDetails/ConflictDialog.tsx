@@ -2,7 +2,7 @@ import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/re
 import { Button } from '../../../../components/Button';
 import { EmptyValue } from '../../../../components/EmptyValue';
 import type { Contact } from '../../../../types/api.ts';
-import { formatRelativeTime } from '../../../../utils/format.ts';
+import { formatDateTime } from '../../../../utils/format.ts';
 import { CONTACT_FIELD_LABELS, DETAIL_VIEW_TEXT } from '../../contactsDetailView.constants.ts';
 import type { ConflictRow } from '../../contactsDetailView.types.ts';
 
@@ -21,8 +21,6 @@ interface ConflictDialogProps {
   onApply: () => void;
 }
 
-const lowerFirst = (text: string) => text.charAt(0).toLowerCase() + text.slice(1);
-
 /** Mockup D6: someone saved this contact while you were editing it (409 VERSION_CONFLICT). */
 export function ConflictDialog({ current, rows, isApplying, onCancel, onReload, onApply }: ConflictDialogProps) {
   return (
@@ -34,7 +32,7 @@ export function ConflictDialog({ current, rows, isApplying, onCancel, onReload, 
             <div className="space-y-4 p-6">
               <DialogTitle className="text-lg font-semibold text-gray-900">{TEXT.TITLE}</DialogTitle>
               <p className="text-sm text-gray-600">
-                {TEXT.DESCRIPTION(lowerFirst(formatRelativeTime(current.updatedAt)))}{' '}
+                {TEXT.DESCRIPTION(formatDateTime(current.updatedAt))}{' '}
                 {rows.length > 0 ? TEXT.FIELDS_DIFFER : TEXT.NO_DIFFERENCES}
               </p>
 

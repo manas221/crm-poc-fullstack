@@ -11,13 +11,14 @@ import {
   addContactTag,
   bulkAssignTag,
   getContact,
+  listContactActivities,
   listContacts,
   removeContactTag,
   updateContact,
 } from '../api/contacts.ts';
 import { ApiError } from '../api/client.ts';
 import { listTags } from '../api/tags.ts';
-import { CONTACT_TAG_ACTIONS } from '../constants/contact.ts';
+import { ACTIVITY_LIMIT, CONTACT_TAG_ACTIONS } from '../constants/contact.ts';
 import { COMPANY_SUGGESTION_LIMIT } from '../constants/list.ts';
 import type {
   BulkAssignTagRequest,
@@ -105,6 +106,17 @@ export function useContactQuery(id: number | null) {
   return useQuery({
     queryKey: queryKeys.contacts.detail(id),
     queryFn: id === null ? skipToken : () => getContact(id),
+  });
+}
+
+/**
+ * The contact's recent activity. Lives under `contacts.all`, so every edit, tag change and bulk
+ * assignment (which all invalidate that) refreshes it.
+ */
+export function useContactActivitiesQuery(contactId: number) {
+  return useQuery({
+    queryKey: queryKeys.contacts.activities(contactId),
+    queryFn: () => listContactActivities(contactId, ACTIVITY_LIMIT),
   });
 }
 

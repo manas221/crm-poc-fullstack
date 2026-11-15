@@ -1,3 +1,5 @@
+import type { ActivityType } from '../types/api.ts';
+
 // Edit-form limits. They mirror updateContactBodySchema in backend/src/schemas/contact.schemas.ts;
 // the backend enforces them anyway, these let the form say what's wrong before saving.
 
@@ -19,3 +21,12 @@ export const CONTACT_TAG_ACTIONS = {
   ADD: 'add',
   REMOVE: 'remove',
 } as const;
+
+export const ACTIVITY_TYPES = {
+  CONTACT_UPDATED: 'CONTACT_UPDATED',
+  TAG_ADDED: 'TAG_ADDED',
+  TAG_REMOVED: 'TAG_REMOVED',
+} as const satisfies Record<string, ActivityType>;
+
+/** How many entries "Recent activity" shows (the backend's default; its max is 50). */
+export const ACTIVITY_LIMIT = 10;
