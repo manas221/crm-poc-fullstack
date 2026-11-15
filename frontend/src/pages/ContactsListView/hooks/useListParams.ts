@@ -1,7 +1,13 @@
 import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 import { INITIAL_SORT_ORDER, LIST_VIEW_ACTION_TYPES, SORT_ORDER } from '../contactsListView.constants.ts';
-import { normalizeSearch, parseListParams, toSearchParams } from '../contactsListView.helpers.ts';
+import {
+  normalizeCompany,
+  normalizeSearch,
+  normalizeTagIds,
+  parseListParams,
+  toSearchParams,
+} from '../contactsListView.helpers.ts';
 import type { ListAction, ListParams } from '../contactsListView.types.ts';
 
 /**
@@ -29,6 +35,15 @@ export function listParamsReducer(state: ListParams, action: ListAction): ListPa
     }
     case LIST_VIEW_ACTION_TYPES.CLEAR_FILTERS:
       return { ...state, q: undefined, company: undefined, tags: undefined, page: 1 };
+    case LIST_VIEW_ACTION_TYPES.COMPANY: {
+      const company = normalizeCompany(action.company);
+      return company === state.company ? state : { ...state, company, page: 1 };
+    }
+    case LIST_VIEW_ACTION_TYPES.TAGS: {
+      const tags = normalizeTagIds(action.tags);
+      const isSame = tags.join(',') === (state.tags ?? []).join(',');
+      return isSame ? state : { ...state, tags: tags.length > 0 ? tags : undefined, page: 1 };
+    }
     case LIST_VIEW_ACTION_TYPES.PAGE:
       return { ...state, page: Math.max(1, Math.floor(action.page)) };
     case LIST_VIEW_ACTION_TYPES.LIMIT:

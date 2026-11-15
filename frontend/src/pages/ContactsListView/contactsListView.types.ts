@@ -10,6 +10,10 @@ export type ListAction =
   | { type: typeof LIST_VIEW_ACTION_TYPES.SEARCH; q: string }
   | { type: typeof LIST_VIEW_ACTION_TYPES.SORT; sort: ContactSort }
   | { type: typeof LIST_VIEW_ACTION_TYPES.CLEAR_FILTERS }
+  /** `undefined` removes the company filter. */
+  | { type: typeof LIST_VIEW_ACTION_TYPES.COMPANY; company: string | undefined }
+  /** The full new selection; `[]` removes the tags filter. */
+  | { type: typeof LIST_VIEW_ACTION_TYPES.TAGS; tags: number[] }
   | { type: typeof LIST_VIEW_ACTION_TYPES.PAGE; page: number }
   | { type: typeof LIST_VIEW_ACTION_TYPES.LIMIT; limit: number };
 

@@ -1,5 +1,6 @@
 export {
   AlertCircleIcon,
+  CheckIcon,
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
   ChevronDownIcon,
@@ -8,4 +9,5 @@ export {
   ChevronUpDownIcon,
   ChevronUpIcon,
   SearchIcon,
+  XIcon,
 } from './icons.tsx';

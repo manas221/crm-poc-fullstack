@@ -3,9 +3,10 @@ import { Button } from '../../components/Button';
 import { EmptyState } from '../../components/EmptyState';
 import { SearchIcon } from '../../components/icons';
 import { formatNumber } from '../../utils/format.ts';
+import { ActiveFilterChips } from './components/ActiveFilterChips';
 import { ContactsTable } from './components/ContactsTable';
+import { FiltersBar } from './components/FiltersBar';
 import { PaginationFooter } from './components/PaginationFooter';
-import { SearchInput } from './components/SearchInput';
 import { LIST_VIEW_STATUS, LIST_VIEW_TEXT } from './contactsListView.constants.ts';
 import { useContactsListView } from './hooks/useContactsListView.ts';
 
@@ -15,11 +16,19 @@ export function ContactsListView() {
     total,
     tableData,
     footerData,
+    tagOptions,
+    tagIds,
+    selectedTags,
     hasFilters,
     isPastLastPage,
     handleSearch,
     handleSort,
     handleClearFilters,
+    handleCompanyChange,
+    handleRemoveCompany,
+    handleTagsChange,
+    handleRemoveTag,
+    handleRetryTags,
     handlePageChange,
     handleLimitChange,
     handleGoToLastPage,
@@ -54,9 +63,25 @@ export function ContactsListView() {
         )}
       </header>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <SearchInput value={params.q ?? ''} onSearch={handleSearch} />
-      </div>
+      <FiltersBar
+        q={params.q}
+        company={params.company}
+        tagIds={tagIds}
+        tagOptions={tagOptions}
+        hasFilters={hasFilters}
+        onSearch={handleSearch}
+        onCompanyChange={handleCompanyChange}
+        onTagsChange={handleTagsChange}
+        onRetryTags={handleRetryTags}
+        onClearFilters={handleClearFilters}
+      />
+
+      <ActiveFilterChips
+        company={params.company}
+        tags={selectedTags}
+        onRemoveCompany={handleRemoveCompany}
+        onRemoveTag={handleRemoveTag}
+      />
 
       {tableData.status === LIST_VIEW_STATUS.ERROR && (
         <Alert

@@ -11,5 +11,6 @@ export const SEARCH_DEBOUNCE_MS = 300;
 export const MAX_COMPANY_LENGTH = 200;
 export const MAX_TAG_FILTER = 50;
 export const COMPANY_SUGGESTION_LIMIT = 20;
+export const MAX_COMPANY_SEARCH_LENGTH = 100;
 
 export const MAX_BULK_CONTACTS = 1000;

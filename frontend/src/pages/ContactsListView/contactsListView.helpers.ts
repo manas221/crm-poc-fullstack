@@ -30,11 +30,21 @@ function parsePositiveInt(value: string | null): number | undefined {
   return Number.isSafeInteger(n) ? n : undefined;
 }
 
-/** "5,2,x,5" → [2, 5]: invalid ids dropped, deduplicated, sorted (a stable cache key). */
+/** Deduplicated, sorted, capped at the API's maximum: one stable form (and cache key) per selection. */
+export function normalizeTagIds(ids: readonly number[]): number[] {
+  return [...new Set(ids)].sort((a, b) => a - b).slice(0, MAX_TAG_FILTER);
+}
+
+/** "5,2,x,5" → [2, 5]: invalid ids dropped, then normalized. */
 function parseTagIds(value: string | null): number[] {
   const ids = (value ?? '').split(',').map((part) => parsePositiveInt(part.trim()));
-  const valid = ids.filter((id): id is number => id !== undefined);
-  return [...new Set(valid)].sort((a, b) => a - b).slice(0, MAX_TAG_FILTER);
+  return normalizeTagIds(ids.filter((id): id is number => id !== undefined));
+}
+
+/** Trimmed; blank means no company filter. */
+export function normalizeCompany(raw: string | undefined): string | undefined {
+  const company = (raw ?? '').trim();
+  return company && company.length <= MAX_COMPANY_LENGTH ? company : undefined;
 }
 
 function isOneOf<T extends string>(options: readonly T[], value: string | null): value is T {
@@ -50,7 +60,7 @@ export function parseListParams(searchParams: URLSearchParams): ListParams {
   const sort = searchParams.get('sort');
   const order = searchParams.get('order');
   const q = normalizeSearch(searchParams.get('q') ?? '');
-  const company = (searchParams.get('company') ?? '').trim();
+  const company = normalizeCompany(searchParams.get('company') ?? undefined);
   const tags = parseTagIds(searchParams.get('tags'));
 
   return {
@@ -59,7 +69,7 @@ export function parseListParams(searchParams: URLSearchParams): ListParams {
     sort: isOneOf<ContactSort>(CONTACT_SORTS, sort) ? sort : DEFAULT_SORT,
     order: isOneOf<SortOrder>(SORT_ORDERS, order) ? order : DEFAULT_ORDER,
     ...(q && q.length <= MAX_SEARCH_LENGTH && { q }),
-    ...(company && company.length <= MAX_COMPANY_LENGTH && { company }),
+    ...(company && { company }),
     ...(tags.length > 0 && { tags }),
   };
 }

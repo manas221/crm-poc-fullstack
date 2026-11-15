@@ -22,6 +22,8 @@ export const LIST_VIEW_ACTION_TYPES = {
   SEARCH: 'search',
   SORT: 'sort',
   CLEAR_FILTERS: 'clearFilters',
+  COMPANY: 'company',
+  TAGS: 'tags',
   PAGE: 'page',
   LIMIT: 'limit',
 } as const;
@@ -54,6 +56,36 @@ export const LIST_VIEW_TEXT = {
     PLACEHOLDER: 'Search name, email or phone...',
     ARIA_LABEL: 'Search contacts by name, email or phone',
     TOO_SHORT: (minLength: number) => `Type at least ${minLength} characters to search`,
+  },
+  FILTERS: {
+    CLEAR_FILTERS: 'Clear filters',
+    COMPANY: {
+      LABEL: 'Company',
+      SEARCH_PLACEHOLDER: 'Search companies...',
+      SEARCH_ARIA_LABEL: 'Search companies',
+      LOADING: 'Loading companies…',
+      ERROR: 'Couldn’t load companies.',
+      RETRY: 'Retry',
+      NO_MATCHES: (q: string) => `No companies match “${q}”`,
+      NO_COMPANIES: 'No companies yet',
+      MATCH_COUNT: (count: number) => (count === 1 ? '1 match' : `${count} matches`),
+      /** The API returns at most COMPANY_SUGGESTION_LIMIT names, so there may be more. */
+      FIRST_MATCHES: (count: number) => `First ${count} matches, keep typing to narrow down`,
+    },
+    TAGS: {
+      LABEL: 'Tags',
+      LOADING: 'Loading tags…',
+      ERROR: 'Couldn’t load tags.',
+      RETRY: 'Retry',
+      NO_TAGS: 'No tags yet',
+      /** Button value when more than one tag is picked: "VIP +2". */
+      MORE: (firstName: string, moreCount: number) => `${firstName} +${moreCount}`,
+    },
+    CHIPS: {
+      COMPANY: 'Company',
+      TAG: 'Tag',
+      REMOVE_ARIA_LABEL: (label: string, value: string) => `Remove filter ${label}: ${value}`,
+    },
   },
   NO_RESULTS: {
     TITLE: 'No contacts match your search',
