@@ -1,11 +1,11 @@
-import { TagPill } from '../../../../components/TagPill';
-import type { Tag } from '../../../../types/api.ts';
+import { TagPill } from '../../../../../components/TagPill';
+import type { Tag } from '../../../../../types/api.ts';
 import { EmptyValue } from './EmptyValue.tsx';
 
 const MAX_VISIBLE_TAGS = 2;
 
 /** First two tags as pills, the rest as "+N" (their names on hover). */
-export function TagCell({ tags }: { tags: Tag[] }) {
+export function TagList({ tags }: { tags: Tag[] }) {
   if (tags.length === 0) {
     return <EmptyValue />;
   }

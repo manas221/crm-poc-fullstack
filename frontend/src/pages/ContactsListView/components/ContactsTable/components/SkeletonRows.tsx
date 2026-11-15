@@ -1,6 +1,6 @@
-import { Skeleton } from '../../../../components/Skeleton';
-import { CONTACT_TABLE_COLUMN_KEYS } from '../../contactsListView.constants.ts';
-import { COLUMNS } from './columns.ts';
+import { Skeleton } from '../../../../../components/Skeleton';
+import { CONTACT_TABLE_COLUMN_KEYS } from '../../../contactsListView.constants.ts';
+import { COLUMNS } from '../columns.ts';
 
 // Varying bar widths (fixed per row, not random) so the skeleton looks like real text.
 const WIDTHS = ['w-3/5', 'w-4/5', 'w-1/2', 'w-2/3', 'w-3/4'];

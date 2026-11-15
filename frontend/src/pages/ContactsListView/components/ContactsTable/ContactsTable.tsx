@@ -1,17 +1,10 @@
 import type { ReactNode } from 'react';
 import type { Contact, ContactSort, SortOrder } from '../../../../types/api.ts';
 import { cn } from '../../../../utils/cn.ts';
-import {
-  CONTACT_TABLE_COLUMN_KEYS,
-  CONTACT_TABLE_COLUMN_LABELS,
-  LIST_VIEW_STATUS,
-  LIST_VIEW_TEXT,
-} from '../../contactsListView.constants.ts';
+import { LIST_VIEW_STATUS, LIST_VIEW_TEXT } from '../../contactsListView.constants.ts';
 import { COLUMNS } from './columns.ts';
-import { ContactRow } from './ContactRow.tsx';
-import { SelectAllHeader } from './SelectAllHeader.tsx';
-import { SkeletonRows } from './SkeletonRows.tsx';
-import { SortableHeader } from './SortableHeader.tsx';
+import { ContactRow } from './components/ContactRow.tsx';
+import { SkeletonRows } from './components/SkeletonRows.tsx';
 
 /** What the table body shows. Built by useContactsListView from the query state. */
 export type ContactsTableData =
@@ -50,7 +43,17 @@ export function ContactsTable({
   const isUpdating = data.status === LIST_VIEW_STATUS.READY && data.isUpdating;
   const isBusy = data.status === LIST_VIEW_STATUS.LOADING || isUpdating;
   const rowCount = data.status === LIST_VIEW_STATUS.READY ? data.contacts.length : 0;
-  const allSelected = rowCount > 0 && selectedIds.size === rowCount;
+  const isAllSelected = rowCount > 0 && selectedIds.size === rowCount;
+  // The same props for every header cell; each column's Header uses what it needs.
+  const headerProps = {
+    sort,
+    order,
+    onSort,
+    isAllSelected,
+    isSomeSelected: selectedIds.size > 0 && !isAllSelected,
+    isSelectAllDisabled: rowCount === 0 || isUpdating || isSelectionLocked,
+    onToggleAllRows,
+  };
 
   return (
     <div className="overflow-x-auto rounded-lg border border-gray-200">
@@ -62,28 +65,9 @@ export function ContactsTable({
         </colgroup>
         <thead className="bg-gray-50">
           <tr className="border-b border-gray-200">
-            {COLUMNS.map(({ key, sortKey }) =>
-              key === CONTACT_TABLE_COLUMN_KEYS.CHECKBOX ? (
-                <SelectAllHeader
-                  key={key}
-                  checked={allSelected}
-                  indeterminate={selectedIds.size > 0 && !allSelected}
-                  disabled={rowCount === 0 || isUpdating || isSelectionLocked}
-                  onToggle={onToggleAllRows}
-                />
-              ) : sortKey ? (
-                <SortableHeader
-                  key={key}
-                  label={CONTACT_TABLE_COLUMN_LABELS[key]}
-                  activeOrder={sortKey === sort ? order : null}
-                  onSort={() => onSort(sortKey)}
-                />
-              ) : (
-                <th key={key} scope="col" className="px-4 py-3 text-left font-semibold text-gray-600">
-                  {CONTACT_TABLE_COLUMN_LABELS[key]}
-                </th>
-              ),
-            )}
+            {COLUMNS.map(({ key, Header }) => (
+              <Header key={key} columnKey={key} {...headerProps} />
+            ))}
           </tr>
         </thead>
         <tbody

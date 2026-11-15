@@ -1,17 +1,76 @@
-import { CONTACT_SORT_KEYS, CONTACT_TABLE_COLUMN_KEYS } from '../../contactsListView.constants.ts';
-import type { ContactTableColumn } from '../../contactsListView.types.ts';
+import { CONTACT_TABLE_COLUMN_KEYS } from "../../contactsListView.constants.ts";
+import type { ContactTableColumn } from "../../contactsListView.types.ts";
+import {
+  CheckboxCell,
+  CompanyCell,
+  CreatedAtCell,
+  EmailCell,
+  NameCell,
+  PhoneCell,
+  TagsCell,
+} from "./components/ContactCells.tsx";
+import {
+  CreatedAtHeader,
+  LabelHeader,
+  NameHeader,
+  SelectAllHeader,
+} from "./components/ContactHeaderCells.tsx";
 
-// One list of columns drives the header, the rows and the skeleton, so they always line up.
-// Widths are fixed (table-fixed) so long values truncate instead of stretching the table.
-// Header text comes from CONTACT_TABLE_COLUMN_LABELS. Only columns with a sortKey are sortable
-// (the backend allowlists name and createdAt). The CHECKBOX column holds the row checkboxes.
+const CHECKBOX: ContactTableColumn = {
+  key: CONTACT_TABLE_COLUMN_KEYS.CHECKBOX,
+  width: "w-12",
+  Header: SelectAllHeader,
+  Cell: CheckboxCell,
+};
+
+const NAME: ContactTableColumn = {
+  key: CONTACT_TABLE_COLUMN_KEYS.NAME,
+  width: "w-[17%]",
+  Header: NameHeader,
+  Cell: NameCell,
+};
+
+const EMAIL: ContactTableColumn = {
+  key: CONTACT_TABLE_COLUMN_KEYS.EMAIL,
+  width: "w-[19%]",
+  Header: LabelHeader,
+  Cell: EmailCell,
+};
+
+const PHONE: ContactTableColumn = {
+  key: CONTACT_TABLE_COLUMN_KEYS.PHONE,
+  width: "w-[14%]",
+  Header: LabelHeader,
+  Cell: PhoneCell,
+};
+
+const COMPANY: ContactTableColumn = {
+  key: CONTACT_TABLE_COLUMN_KEYS.COMPANY,
+  width: "w-[17%]",
+  Header: LabelHeader,
+  Cell: CompanyCell,
+};
+
+const TAGS: ContactTableColumn = {
+  key: CONTACT_TABLE_COLUMN_KEYS.TAGS,
+  width: "w-[20%]",
+  Header: LabelHeader,
+  Cell: TagsCell,
+};
+
+const CREATED_AT: ContactTableColumn = {
+  key: CONTACT_TABLE_COLUMN_KEYS.CREATED_AT,
+  width: "w-[13%]",
+  Header: CreatedAtHeader,
+  Cell: CreatedAtCell,
+};
 
 export const COLUMNS: readonly ContactTableColumn[] = [
-  { key: CONTACT_TABLE_COLUMN_KEYS.CHECKBOX, width: 'w-12' },
-  { key: CONTACT_TABLE_COLUMN_KEYS.NAME, width: 'w-[17%]', sortKey: CONTACT_SORT_KEYS.NAME },
-  { key: CONTACT_TABLE_COLUMN_KEYS.EMAIL, width: 'w-[19%]' },
-  { key: CONTACT_TABLE_COLUMN_KEYS.PHONE, width: 'w-[14%]' },
-  { key: CONTACT_TABLE_COLUMN_KEYS.COMPANY, width: 'w-[17%]' },
-  { key: CONTACT_TABLE_COLUMN_KEYS.TAGS, width: 'w-[20%]' },
-  { key: CONTACT_TABLE_COLUMN_KEYS.CREATED_AT, width: 'w-[13%]', sortKey: CONTACT_SORT_KEYS.CREATED_AT },
+  CHECKBOX,
+  NAME,
+  EMAIL,
+  PHONE,
+  COMPANY,
+  TAGS,
+  CREATED_AT,
 ];

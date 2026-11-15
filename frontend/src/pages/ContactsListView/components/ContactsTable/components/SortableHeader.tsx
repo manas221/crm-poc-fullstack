@@ -1,7 +1,7 @@
-import { ChevronDownIcon, ChevronUpDownIcon, ChevronUpIcon } from '../../../../components/icons';
-import type { SortOrder } from '../../../../types/api.ts';
-import { cn } from '../../../../utils/cn.ts';
-import { SORT_ORDER } from '../../contactsListView.constants.ts';
+import { ChevronDownIcon, ChevronUpDownIcon, ChevronUpIcon } from '../../../../../components/icons';
+import type { SortOrder } from '../../../../../types/api.ts';
+import { cn } from '../../../../../utils/cn.ts';
+import { SORT_ORDER } from '../../../contactsListView.constants.ts';
 
 interface SortableHeaderProps {
   label: string;

@@ -1,4 +1,4 @@
-import { LIST_VIEW_TEXT } from '../../contactsListView.constants.ts';
+import { LIST_VIEW_TEXT } from '../../../contactsListView.constants.ts';
 
 /** The "—" shown for a missing email, phone, company or tags. */
 export function EmptyValue() {
