@@ -33,12 +33,27 @@ export const queryKeys = {
 // ---------------------------------------------------------------------------------------
 // Contacts
 
+/** True when two list requests differ only in page or page size, i.e. it's the same result set. */
+function isSameResultSet(a: ListContactsParams, b: ListContactsParams): boolean {
+  return (
+    a.sort === b.sort &&
+    a.order === b.order &&
+    (a.q ?? '') === (b.q ?? '') &&
+    (a.company ?? '') === (b.company ?? '') &&
+    (a.tags ?? []).join(',') === (b.tags ?? []).join(',')
+  );
+}
+
 export function useContactsQuery(params: ListContactsParams) {
   return useQuery({
     queryKey: queryKeys.contacts.list(params),
     queryFn: () => listContacts(params),
-    // Keep showing the current rows while the next page loads, instead of flashing a skeleton.
-    placeholderData: keepPreviousData,
+    // Paging keeps the current rows visible (dimmed) until the next page arrives. A new search,
+    // filter or sort shows skeleton rows instead: the old rows would be misleading there.
+    placeholderData: (previousData, previousQuery) => {
+      const previousParams = previousQuery?.queryKey[2];
+      return previousParams && isSameResultSet(previousParams, params) ? previousData : undefined;
+    },
   });
 }
 
