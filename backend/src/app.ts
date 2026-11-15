@@ -5,6 +5,7 @@ import { errorHandler, notFoundHandler } from './errors/error-handler.js';
 import { companyRouter } from './routes/company.routes.js';
 import { contactRouter } from './routes/contact.routes.js';
 import { healthRouter } from './routes/health.routes.js';
+import { tagRouter } from './routes/tag.routes.js';
 
 // Builds the Express app without listening, so tests can import it with supertest.
 export function createApp(): Express {
@@ -16,6 +17,7 @@ export function createApp(): Express {
   app.use(healthRouter);
   app.use('/api/contacts', contactRouter);
   app.use('/api/companies', companyRouter);
+  app.use('/api/tags', tagRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

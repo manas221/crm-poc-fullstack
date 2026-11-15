@@ -1,11 +1,9 @@
 import * as contactRepository from '../repositories/contact.repository.js';
 import type { ContactRow, TagRow } from '../repositories/contact.repository.js';
+import type { Tag } from '../repositories/tag.repository.js';
 import type { ListContactsQuery } from '../schemas/contact.schemas.js';
 
-export interface Tag {
-  id: number;
-  name: string;
-}
+export type { Tag };
 
 export type ContactWithTags = ContactRow & { tags: Tag[] };
 
