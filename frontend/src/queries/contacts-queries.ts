@@ -2,7 +2,6 @@ import {
   keepPreviousData,
   skipToken,
   useMutation,
-  useMutationState,
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
@@ -53,11 +52,6 @@ export const queryKeys = {
     all: ['companies'] as const,
     search: (params: ListCompaniesParams) => [...queryKeys.companies.all, params] as const,
   },
-};
-
-/** Keys of mutations whose in-flight calls a component reads back with useMutationState. */
-export const mutationKeys = {
-  contactTags: (contactId: number) => ['contactTags', contactId] as const,
 };
 
 // ---------------------------------------------------------------------------------------
@@ -146,46 +140,33 @@ export type ContactTagAction = (typeof CONTACT_TAG_ACTIONS)[keyof typeof CONTACT
 
 /** One tag change on one contact: the mutation's variables. */
 export interface ContactTagChange {
+  contactId: number;
   action: ContactTagAction;
   tag: Tag;
 }
 
-interface ContactTagMutationCallbacks {
-  /** Called for every failed change, not only the latest one (unlike mutate()'s own callbacks). */
-  onError?: (error: Error, change: ContactTagChange) => void;
-}
-
 /**
- * Adds or removes one tag on a contact. Several can run at once (one per tag), and each stays
- * pending until the contact has been refetched, so a tag never flickers out between "saved"
- * and "shown". Refetching (rather than writing each response into the cache) also means
- * responses arriving out of order can't leave an older tag list on screen.
+ * Adds or removes one tag on a contact. The UI allows one change at a time, so `isPending`,
+ * `variables` and `error` describe the change in progress (or the last one that failed).
+ * It stays pending until the contact has been refetched, so a tag never flickers out
+ * between "saved" and "shown". The contact id comes with each change, so the detail page's
+ * hook can create this before the contact has loaded.
  */
-export function useContactTagMutation(contactId: number, { onError }: ContactTagMutationCallbacks = {}) {
+export function useContactTagMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationKey: mutationKeys.contactTags(contactId),
-    mutationFn: ({ action, tag }: ContactTagChange) =>
+    mutationFn: ({ contactId, action, tag }: ContactTagChange) =>
       action === CONTACT_TAG_ACTIONS.ADD ? addContactTag(contactId, tag.id) : removeContactTag(contactId, tag.id),
     // The detail (tags), its activity feed, and the lists' tag column all change.
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.contacts.all }),
-    onError: (error, change) => {
+    onError: (error, { contactId }) => {
       // The tag or the contact was deleted meanwhile: refresh both (a missing contact turns
       // the page into "Contact not found").
       if (error instanceof ApiError && error.code === 'NOT_FOUND') {
         void queryClient.invalidateQueries({ queryKey: queryKeys.tags.all });
         void queryClient.invalidateQueries({ queryKey: queryKeys.contacts.detail(contactId) });
       }
-      onError?.(error, change);
     },
-  });
-}
-
-/** The tag changes on this contact that are still saving, oldest first. */
-export function usePendingContactTagChanges(contactId: number): ContactTagChange[] {
-  return useMutationState({
-    filters: { mutationKey: mutationKeys.contactTags(contactId), status: 'pending' },
-    select: (mutation) => mutation.state.variables as ContactTagChange,
   });
 }
 

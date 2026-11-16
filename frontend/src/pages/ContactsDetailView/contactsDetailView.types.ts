@@ -37,7 +37,7 @@ export interface SaveError {
   message: string | null;
 }
 
-/** The tags the "Add tag" picker offers. Built by useContactTags from the tags query. */
+/** The tags the "Add tag" picker offers. Built by useContactsDetailView from the tags query. */
 export type TagPickerData =
   | { status: typeof DETAIL_VIEW_STATUS.LOADING }
   | { status: typeof DETAIL_VIEW_STATUS.ERROR }
@@ -56,6 +56,23 @@ export interface TagChangeFailure {
   message: string;
   /** False when retrying can't help (the tag no longer exists). */
   canRetry: boolean;
+}
+
+/** Everything the Tags card needs, built by useContactsDetailView. */
+export interface ContactTagsState {
+  /** The contact's tags, plus the one being added. */
+  shownTags: ShownTag[];
+  addTagButtonData: TagPickerData;
+  /** A change is saving: the other controls are disabled (one change at a time). */
+  isSaving: boolean;
+  /** The last change that failed, if the latest change failed. */
+  failure: TagChangeFailure | null;
+  handleAdd: (tag: Tag) => void;
+  handleRemove: (tag: Tag) => void;
+  /** Sends the failed change again. */
+  handleRetryChange: () => void;
+  /** Refetches the tags after they failed to load. */
+  handleRetryTags: () => void;
 }
 
 /** What "Recent activity" shows. Built by useContactsDetailView from the activities query. */

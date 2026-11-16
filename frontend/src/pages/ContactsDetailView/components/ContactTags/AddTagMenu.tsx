@@ -13,6 +13,8 @@ const ITEM = 'flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text
 
 interface AddTagMenuProps {
   data: TagPickerData;
+  /** A tag change is saving: only one at a time. */
+  isDisabled: boolean;
   onAdd: (tag: Tag) => void;
   /** Refetches the tags after they failed to load. */
   onRetry: () => void;
@@ -22,12 +24,15 @@ interface AddTagMenuProps {
  * "+ Add tag" and the tags the contact doesn't have yet. A menu (arrow keys, Enter, Escape),
  * no search: there are only a handful of tags. Picking one closes it (mockup T5).
  */
-export function AddTagMenu({ data, onAdd, onRetry }: AddTagMenuProps) {
+export function AddTagMenu({ data, isDisabled, onAdd, onRetry }: AddTagMenuProps) {
   return (
     <Menu>
       {/* data-focus (Headless UI's keyboard focus), not focus-visible: closing the menu hands
           focus back to this button, and the browser would ring it after a mouse pick too. */}
-      <MenuButton className="inline-flex items-center gap-1 rounded-full border border-dashed border-gray-300 px-3 py-1 text-sm text-gray-700 outline-none hover:border-gray-400 hover:text-gray-900 data-focus:outline-2 data-focus:outline-offset-2 data-focus:outline-solid data-focus:outline-blue-600 data-open:border-solid data-open:border-blue-600 data-open:text-gray-900">
+      <MenuButton
+        disabled={isDisabled}
+        className="inline-flex items-center gap-1 rounded-full border border-dashed border-gray-300 px-3 py-1 text-sm text-gray-700 outline-none hover:border-gray-400 hover:text-gray-900 data-focus:outline-2 data-focus:outline-offset-2 data-focus:outline-solid data-focus:outline-blue-600 data-open:border-solid data-open:border-blue-600 data-open:text-gray-900 data-disabled:pointer-events-none data-disabled:opacity-50"
+      >
         <PlusIcon className="size-3.5" />
         {TEXT.ADD_TAG}
       </MenuButton>

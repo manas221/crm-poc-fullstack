@@ -7,10 +7,12 @@ interface ContactTagPillProps {
   tag: Tag;
   /** Being added or removed: a spinner replaces the remove button (mockup T5). */
   isSaving: boolean;
+  /** Another tag change is saving: only one at a time. */
+  isDisabled: boolean;
   onRemove: () => void;
 }
 
-export function ContactTagPill({ tag, isSaving, onRemove }: ContactTagPillProps) {
+export function ContactTagPill({ tag, isSaving, isDisabled, onRemove }: ContactTagPillProps) {
   return (
     <TagPill name={tag.name} size="md" className={isSaving ? 'opacity-70' : undefined}>
       {isSaving ? (
@@ -19,8 +21,9 @@ export function ContactTagPill({ tag, isSaving, onRemove }: ContactTagPillProps)
         <button
           type="button"
           onClick={onRemove}
+          disabled={isDisabled}
           aria-label={DETAIL_VIEW_TEXT.TAGS.REMOVE_ARIA_LABEL(tag.name)}
-          className="-mr-1 rounded-full p-0.5 opacity-70 hover:bg-black/5 hover:opacity-100 focus-visible:outline-2 focus-visible:outline-blue-600"
+          className="-mr-1 rounded-full p-0.5 opacity-70 hover:bg-black/5 hover:opacity-100 disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-blue-600"
         >
           <XIcon className="size-3.5" />
         </button>

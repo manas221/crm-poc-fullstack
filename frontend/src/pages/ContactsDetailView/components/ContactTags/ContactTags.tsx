@@ -1,24 +1,29 @@
 import { Button } from '../../../../components/Button';
 import { AlertCircleIcon } from '../../../../components/icons';
-import type { Contact } from '../../../../types/api.ts';
 import { DETAIL_VIEW_TEXT } from '../../contactsDetailView.constants.ts';
-import { useContactTags } from '../../hooks/useContactTags.ts';
+import type { ContactTagsState } from '../../contactsDetailView.types.ts';
 import { DetailCard } from '../DetailCard';
 import { AddTagMenu } from './AddTagMenu.tsx';
 import { ContactTagPill } from './ContactTagPill.tsx';
 
-/** The "Tags" card (mockups T1–T9): remove with ×, add from the picker; each change saves at once. */
-export function ContactTags({ contact }: { contact: Contact }) {
-  const { shownTags, pickerData, failure, handleAdd, handleRemove, handleRetryChange, handleRetryTags } =
-    useContactTags(contact);
+/** The "Tags" card (mockups T1–T9): remove with ×, add from the picker; each change saves at once, one at a time. */
+export function ContactTags({ contactTagsState }: { contactTagsState: ContactTagsState }) {
+  const { shownTags, addTagButtonData, isSaving, failure, handleAdd, handleRemove, handleRetryChange, handleRetryTags } =
+    contactTagsState;
 
   return (
     <DetailCard title={DETAIL_VIEW_TEXT.SECTIONS.TAGS} aside={DETAIL_VIEW_TEXT.SECTIONS.TAGS_AUTOSAVE}>
       <div className="flex flex-wrap items-center gap-2">
-        {shownTags.map(({ tag, isSaving }) => (
-          <ContactTagPill key={tag.id} tag={tag} isSaving={isSaving} onRemove={() => handleRemove(tag)} />
+        {shownTags.map(({ tag, isSaving: isTagSaving }) => (
+          <ContactTagPill
+            key={tag.id}
+            tag={tag}
+            isSaving={isTagSaving}
+            isDisabled={isSaving}
+            onRemove={() => handleRemove(tag)}
+          />
         ))}
-        <AddTagMenu data={pickerData} onAdd={handleAdd} onRetry={handleRetryTags} />
+        <AddTagMenu data={addTagButtonData} isDisabled={isSaving} onAdd={handleAdd} onRetry={handleRetryTags} />
       </div>
 
       {failure && (
