@@ -208,3 +208,16 @@ One change saves at a time, and the controls are disabled meanwhile.
 | Form | — | A banner when a save fails | Field errors, "email already used", and the conflict dialog |
 
 **Everything goes through `useContactsDetailView`.** It calls the contact and activity queries and the smaller hooks: `useContactEditForm` and `useContactTagsState`. It returns one state object per section: `contactData`, `activityData`, `contactFormState` and `contactTagsState`. The section components only render what they're given. If one section ever needs another's state, for example to disable tags while the form saves, the data is already in one place.
+
+## AI usage
+
+Built with **Claude Opus** through Claude Code, steered by a written project guide that records the decisions already made: the stack, the API contract, the concurrency rules and the coding conventions.
+
+Most of the guidance is for the frontend, where an AI's defaults drift most:
+- where state lives: the URL, TanStack Query, or small hooks;
+- one page hook per page;
+- constants instead of string literals;
+- Headless UI and Tailwind, and no other UI libraries;
+- loading, empty, error and conflict states on every view.
+
+Every change was reviewed and checked in the browser.
