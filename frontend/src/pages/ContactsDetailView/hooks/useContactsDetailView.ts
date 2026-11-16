@@ -1,10 +1,10 @@
-import { useParams } from 'react-router';
+import { useLocation, useNavigate, useParams } from 'react-router';
 import { ApiError } from '../../../api/client.ts';
 import { useContactQuery } from '../../../queries/contacts-queries.ts';
+import { isFromList } from '../../../utils/navigation.ts';
 import { DETAIL_VIEW_STATUS } from '../contactsDetailView.constants.ts';
 import { parseContactId } from '../contactsDetailView.helpers.ts';
 import type { ContactDetailData } from '../contactsDetailView.types.ts';
-import { useBackToContacts } from './useBackToContacts.ts';
 
 /**
  * Everything the detail page needs, in one place (like useContactsListView): the contact id
@@ -14,7 +14,8 @@ export function useContactsDetailView() {
   const { id } = useParams();
   const contactId = parseContactId(id);
   const contactQuery = useContactQuery(contactId);
-  const handleBack = useBackToContacts();
+  const navigate = useNavigate();
+  const { state } = useLocation();
 
   const { data, error, isError, isFetching } = contactQuery;
 
@@ -30,6 +31,14 @@ export function useContactsDetailView() {
   } else {
     contactData = { status: DETAIL_VIEW_STATUS.LOADING };
   }
+
+  const handleBack = () => {
+    if (isFromList(state)) {
+      void navigate(-1);
+    } else {
+      void navigate('/', { replace: true });
+    }
+  };
 
   const handleRetry = () => void contactQuery.refetch();
 

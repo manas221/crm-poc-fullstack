@@ -9,7 +9,7 @@ export type ContactDetailData =
   | { status: typeof DETAIL_VIEW_STATUS.NOT_FOUND }
   | { status: typeof DETAIL_VIEW_STATUS.READY; contact: Contact };
 
-/** The states with no contact to show: the page renders FailedContactScreens instead. */
+/** The states with no contact to show: the page renders FailedContactScreens (in ContactsDetailView.tsx) instead. */
 export type FailedContactStatus = typeof DETAIL_VIEW_STATUS.NOT_FOUND | typeof DETAIL_VIEW_STATUS.ERROR;
 
 export type ContactField = keyof ContactFields;
