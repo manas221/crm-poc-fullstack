@@ -2,6 +2,30 @@
 
 Browse, search, filter, sort and page through contacts; view and edit a contact; add and remove tags, bulk-assign a tag; and see each contact's recent activity.
 
+## Running locally
+
+Needs Node 22+ and Docker.
+
+```bash
+# 1. Postgres 16 on localhost:5432 (also creates the contacts_test database for tests)
+docker compose up -d
+
+# 2. Backend on http://localhost:3000
+cd backend
+cp .env.example .env
+npm install
+npm run migrate:dev
+npm run seed -- --reset      # 5,000 contacts by default; SEED_COUNT=… to change
+npm run dev
+
+# 3. Frontend on http://localhost:5173 (in a second terminal)
+cd frontend
+npm install
+npm run dev
+```
+
+Tests: `cd backend && npm test`. They run against the `contacts_test` database and migrate it themselves.
+
 ## Tech stack
 
 TypeScript everywhere, with `strict` on.
