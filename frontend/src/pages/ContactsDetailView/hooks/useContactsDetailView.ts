@@ -1,10 +1,10 @@
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { ApiError } from '../../../api/client.ts';
-import { useContactQuery } from '../../../queries/contacts-queries.ts';
+import { useContactActivitiesQuery, useContactQuery } from '../../../queries/contacts-queries.ts';
 import { isFromList } from '../../../utils/navigation.ts';
 import { DETAIL_VIEW_STATUS } from '../contactsDetailView.constants.ts';
 import { parseContactId } from '../contactsDetailView.helpers.ts';
-import type { ContactDetailData } from '../contactsDetailView.types.ts';
+import type { ActivityFeedData, ContactDetailData } from '../contactsDetailView.types.ts';
 
 /**
  * Everything the detail page needs, in one place (like useContactsListView): the contact id
@@ -14,6 +14,8 @@ export function useContactsDetailView() {
   const { id } = useParams();
   const contactId = parseContactId(id);
   const contactQuery = useContactQuery(contactId);
+
+  const activitiesQuery = useContactActivitiesQuery(contactId);
   const navigate = useNavigate();
   const { state } = useLocation();
 
@@ -21,8 +23,6 @@ export function useContactsDetailView() {
 
   let contactData: ContactDetailData;
   if (contactId === null || (error instanceof ApiError && error.code === 'NOT_FOUND')) {
-    // Checked before `data`: if the contact is deleted while open, a refetch 404s while the
-    // old data is still cached, and showing it would be misleading.
     contactData = { status: DETAIL_VIEW_STATUS.NOT_FOUND };
   } else if (data) {
     contactData = { status: DETAIL_VIEW_STATUS.READY, contact: data };
@@ -41,10 +41,25 @@ export function useContactsDetailView() {
   };
 
   const handleRetry = () => void contactQuery.refetch();
+  const handleActivityRetry = () => void activitiesQuery.refetch();
+
+
+  // for recent activity component
+  let activityData: ActivityFeedData;
+  if (activitiesQuery.data) {
+    // While a refetch runs (after an edit or a tag change) the current entries stay on screen.
+    activityData = { status: DETAIL_VIEW_STATUS.READY, activities: activitiesQuery.data };
+  } else if (activitiesQuery.isError && !activitiesQuery.isFetching) {
+    activityData = { status: DETAIL_VIEW_STATUS.ERROR };
+  } else {
+    activityData = { status: DETAIL_VIEW_STATUS.LOADING };
+  }
 
   return {
     contactData,
+    activityData,
     handleBack,
     handleRetry,
+    handleActivityRetry,
   };
 }

@@ -58,7 +58,7 @@ export interface TagChangeFailure {
   canRetry: boolean;
 }
 
-/** What "Recent activity" shows. Built by useContactActivity from the activities query. */
+/** What "Recent activity" shows. Built by useContactsDetailView from the activities query. */
 export type ActivityFeedData =
   | { status: typeof DETAIL_VIEW_STATUS.LOADING }
   | { status: typeof DETAIL_VIEW_STATUS.ERROR }

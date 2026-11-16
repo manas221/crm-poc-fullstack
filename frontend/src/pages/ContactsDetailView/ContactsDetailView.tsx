@@ -99,7 +99,7 @@ function LoadingContactScreen({ onBack }: { onBack: () => void }) {
 }
 
 export function ContactsDetailView() {
-  const { contactData, handleBack, handleRetry } = useContactsDetailView();
+  const { contactData, activityData, handleBack, handleRetry, handleActivityRetry } = useContactsDetailView();
 
   if (isFailedContactData(contactData)) {
     return <FailedContactScreens status={contactData.status} onBack={handleBack} onRetry={handleRetry} />;
@@ -122,7 +122,7 @@ export function ContactsDetailView() {
           <ContactTags contact={contact} />
         </div>
         <div className="lg:col-span-2">
-          <ContactActivity contactId={contact.id} />
+          <ContactActivity activityData={activityData} onRetry={handleActivityRetry} />
         </div>
       </div>
     </section>

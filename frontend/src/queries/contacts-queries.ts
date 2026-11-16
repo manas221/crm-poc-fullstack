@@ -44,7 +44,7 @@ export const queryKeys = {
     list: (params: ListContactsParams) => [...queryKeys.contacts.lists(), params] as const,
     total: () => [...queryKeys.contacts.all, 'total'] as const,
     detail: (id: number | null) => [...queryKeys.contacts.all, 'detail', id] as const,
-    activities: (id: number) => [...queryKeys.contacts.all, 'activities', id] as const,
+    activities: (id: number | null) => [...queryKeys.contacts.all, 'activities', id] as const,
   },
   tags: {
     all: ['tags'] as const,
@@ -113,10 +113,10 @@ export function useContactQuery(id: number | null) {
  * The contact's recent activity. Lives under `contacts.all`, so every edit, tag change and bulk
  * assignment (which all invalidate that) refreshes it.
  */
-export function useContactActivitiesQuery(contactId: number) {
+export function useContactActivitiesQuery(contactId: number | null) {
   return useQuery({
     queryKey: queryKeys.contacts.activities(contactId),
-    queryFn: () => listContactActivities(contactId, ACTIVITY_LIMIT),
+    queryFn: contactId === null ? skipToken : () => listContactActivities(contactId, ACTIVITY_LIMIT),
   });
 }
 
