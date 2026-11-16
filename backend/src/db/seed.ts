@@ -2,7 +2,7 @@
  * Seeds demo data.
  *
  *   npm run seed -- --reset                 # wipe all tables, then insert
- *   SEED_COUNT=50000 npm run seed -- --reset
+ *   SEED_COUNT=15000 npm run seed -- --reset    # the hosted DB
  *
  * Without --reset the script refuses to run on a non-empty database, so it can't pile
  * duplicate data on top of real edits. Everything runs in one transaction: a failed
