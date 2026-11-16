@@ -117,17 +117,18 @@ export function useContactActivitiesQuery(contactId: number | null) {
 /**
  * Saves an edit (optimistic locking: the body carries the version it was based on). The saved
  * contact goes straight into the detail cache, so the page shows it without waiting for a
- * refetch; the lists (and later the activity feed) are refreshed because they show it too.
+ * refetch; the lists and the activity feed are refreshed because they show it too. The id
+ * comes with each save, so the detail page's hook can create this before the contact loads.
  */
-export function useUpdateContactMutation(id: number) {
+export function useUpdateContactMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (body: UpdateContactRequest) => updateContact(id, body),
+    mutationFn: ({ id, body }: { id: number; body: UpdateContactRequest }) => updateContact(id, body),
     onSuccess: (contact) => {
-      queryClient.setQueryData(queryKeys.contacts.detail(id), contact);
+      queryClient.setQueryData(queryKeys.contacts.detail(contact.id), contact);
       void queryClient.invalidateQueries({ queryKey: queryKeys.contacts.all });
     },
-    onError: (error) => {
+    onError: (error, { id }) => {
       // Deleted meanwhile: refetching the detail turns the page into "Contact not found".
       if (error instanceof ApiError && error.code === 'NOT_FOUND') {
         void queryClient.invalidateQueries({ queryKey: queryKeys.contacts.detail(id) });

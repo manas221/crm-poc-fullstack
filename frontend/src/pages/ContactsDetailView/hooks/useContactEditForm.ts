@@ -3,6 +3,7 @@ import { useSetContactData, useUpdateContactMutation } from '../../../queries/co
 import type { Contact } from '../../../types/api.ts';
 import { CONTACT_FIELDS } from '../contactsDetailView.constants.ts';
 import {
+  emptyFormValues,
   getChangedFields,
   getConflictRows,
   getSaveError,
@@ -10,27 +11,37 @@ import {
   toFormValues,
   validateContactForm,
 } from '../contactsDetailView.helpers.ts';
-import type { ContactField, ContactFormErrors } from '../contactsDetailView.types.ts';
+import type { ContactField, ContactFormErrors, ContactFormState, ContactFormValues } from '../contactsDetailView.types.ts';
 
 /**
- * State and handlers of the edit form. The form mounts when editing starts, so `contact` at
- * that moment is the base: its version is what the save is checked against (CLAUDE.md §7).
- * Later refetches of the contact (e.g. after a tag change) don't move the base, or a save
- * could silently overwrite someone else's edit.
+ * State and handlers of the Details card's edit form. Called by useContactsDetailView (not by
+ * the card), so other parts of the page can use it too. `contact` is null until it has loaded.
+ *
+ * Edit starts by snapshotting the contact as `base`: its version is what the save is checked
+ * against (CLAUDE.md §7). Later refetches of the contact (e.g. after a tag change) don't move
+ * the base, or a save could silently overwrite someone else's edit.
  */
-export function useContactEditForm(contact: Contact, onExitEdit: () => void) {
-  const [base, setBase] = useState(contact);
-  const [values, setValues] = useState(() => toFormValues(contact));
+export function useContactEditForm(contact: Contact | null): ContactFormState {
+  // The contact as it was when editing started; null in view mode.
+  const [base, setBase] = useState<Contact | null>(null);
+  const [values, setValues] = useState<ContactFormValues>(emptyFormValues);
+
   // Client errors show once a field has been left, or after Save was pressed.
   const [touched, setTouched] = useState<ReadonlySet<ContactField>>(() => new Set());
   const [submitted, setSubmitted] = useState(false);
+
   // From the server (e.g. email taken). Each one goes away when its field is edited.
   const [serverErrors, setServerErrors] = useState<ContactFormErrors>({});
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+
   // The current contact from a 409: the conflict dialog is open while this is set.
   const [conflict, setConflict] = useState<Contact | null>(null);
-  const mutation = useUpdateContactMutation(contact.id);
+  const mutation = useUpdateContactMutation();
   const setContactData = useSetContactData();
+
+  // The page stays mounted when the URL moves to another contact: an edit of the previous
+  // one doesn't carry over.
+  const isEditing = base !== null && base.id === contact?.id;
 
   const clientErrors = validateContactForm(values);
   const isShown = (field: ContactField) => submitted || touched.has(field);
@@ -44,19 +55,24 @@ export function useContactEditForm(contact: Contact, onExitEdit: () => void) {
   // Save is disabled while the form shows problems it knows about. A server error (email
   // taken) doesn't disable it: the user may fix it, or just retry.
   const hasShownClientErrors = CONTACT_FIELDS.some((field) => isShown(field) && clientErrors[field]);
-  const conflictRows = conflict ? getConflictRows(base, values, conflict) : [];
+  const conflictRows = isEditing && conflict ? getConflictRows(base, values, conflict) : [];
 
-  function save(from: Contact, draft: typeof values) {
+  const exitEdit = () => {
+    setBase(null);
+    setConflict(null);
+  };
+
+  function save(from: Contact, draft: ContactFormValues) {
     const changes = getChangedFields(from, draft);
     if (Object.keys(changes).length === 0) {
-      onExitEdit(); // nothing to save
+      exitEdit(); // nothing to save
       return;
     }
     setSaveMessage(null);
     mutation.mutate(
-      { version: from.version, ...changes },
+      { id: from.id, body: { version: from.version, ...changes } },
       {
-        onSuccess: onExitEdit,
+        onSuccess: exitEdit,
         onError: (error) => {
           const result = getSaveError(error);
           setConflict(result.conflict);
@@ -67,6 +83,21 @@ export function useContactEditForm(contact: Contact, onExitEdit: () => void) {
     );
   }
 
+  /** A fresh form from the contact as it is now. */
+  const handleStartEdit = () => {
+    if (!contact) {
+      return;
+    }
+    setBase(contact);
+    setValues(toFormValues(contact));
+    setTouched(new Set());
+    setSubmitted(false);
+    setServerErrors({});
+    setSaveMessage(null);
+    setConflict(null);
+    mutation.reset();
+  };
+
   const handleChange = (field: ContactField, value: string) => {
     setValues((previous) => ({ ...previous, [field]: value }));
     setServerErrors(({ [field]: _removed, ...rest }) => rest);
@@ -74,10 +105,9 @@ export function useContactEditForm(contact: Contact, onExitEdit: () => void) {
 
   const handleBlur = (field: ContactField) => setTouched((previous) => new Set(previous).add(field));
 
-  /** Returns the first invalid field (to focus), or null when the save went ahead. */
   const handleSubmit = (event: FormEvent): ContactField | null => {
     event.preventDefault();
-    if (mutation.isPending) {
+    if (!base || mutation.isPending) {
       return null;
     }
     setSubmitted(true);
@@ -88,8 +118,6 @@ export function useContactEditForm(contact: Contact, onExitEdit: () => void) {
     save(base, values);
     return null;
   };
-
-  const handleCancel = () => onExitEdit();
 
   // Conflict dialog ----------------------------------------------------------------------
 
@@ -103,13 +131,13 @@ export function useContactEditForm(contact: Contact, onExitEdit: () => void) {
   const handleReloadLatest = () => {
     if (conflict) {
       setContactData(conflict);
-      onExitEdit();
+      exitEdit();
     }
   };
 
   /** Move my edits onto the current version and save them again (only the fields I changed). */
   const handleApplyAgain = () => {
-    if (!conflict || mutation.isPending) {
+    if (!base || !conflict || mutation.isPending) {
       return;
     }
     const rebased = rebaseFormValues(base, values, conflict);
@@ -118,14 +146,14 @@ export function useContactEditForm(contact: Contact, onExitEdit: () => void) {
     if (Object.keys(getChangedFields(conflict, rebased)).length === 0) {
       // They saved exactly my changes: nothing left to apply.
       setContactData(conflict);
-      onExitEdit();
+      exitEdit();
       return;
     }
     save(conflict, rebased);
   };
 
   return {
-    base,
+    isEditing,
     values,
     errors,
     saveMessage,
@@ -133,10 +161,11 @@ export function useContactEditForm(contact: Contact, onExitEdit: () => void) {
     conflictRows,
     isSaving: mutation.isPending,
     isSaveDisabled: mutation.isPending || hasShownClientErrors,
+    handleStartEdit,
     handleChange,
     handleBlur,
     handleSubmit,
-    handleCancel,
+    handleCancel: exitEdit,
     handleCloseConflict,
     handleReloadLatest,
     handleApplyAgain,

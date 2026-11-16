@@ -1,5 +1,16 @@
-import { MAX_COMPANY_LENGTH, MAX_EMAIL_LENGTH, MAX_NAME_LENGTH } from '../../constants/contact.ts';
-import type { ContactField } from './contactsDetailView.types.ts';
+import {
+  EMAIL_PATTERN,
+  MAX_COMPANY_LENGTH,
+  MAX_EMAIL_LENGTH,
+  MAX_NAME_LENGTH,
+  PHONE_PATTERN,
+} from '../../constants/contact.ts';
+import type {
+  ContactField,
+  ContactFieldConfig,
+  ContactFieldSection,
+  ContactTimestampField,
+} from './contactsDetailView.types.ts';
 
 /** What the page shows, from the contact query (see useContactsDetailView). */
 export const DETAIL_VIEW_STATUS = {
@@ -32,14 +43,11 @@ export const DETAIL_VIEW_TEXT = {
     SAVING: 'Saving…',
     SAVE_FAILED: 'Couldn’t save changes. Please try again.',
     ERRORS: {
-      FIRST_NAME_REQUIRED: 'First name is required',
-      LAST_NAME_REQUIRED: 'Last name is required',
-      NAME_TOO_LONG: (label: string) => `${label} must be ${MAX_NAME_LENGTH} characters or fewer`,
+      REQUIRED: (label: string) => `${label} is required`,
+      TOO_LONG: (label: string, max: number) => `${label} must be ${max} characters or fewer`,
       EMAIL_INVALID: 'Enter a valid email address',
-      EMAIL_TOO_LONG: `Email must be ${MAX_EMAIL_LENGTH} characters or fewer`,
       EMAIL_TAKEN: 'Another contact already uses this email.',
       PHONE_INVALID: 'Enter a valid phone number: 7–20 digits, spaces, ( ) or -, optionally starting with +',
-      COMPANY_TOO_LONG: `Company must be ${MAX_COMPANY_LENGTH} characters or fewer`,
       /** The server rejected a value the form let through (its checks are a little stricter). */
       INVALID: (label: string) => `${label} isn’t valid`,
     },
@@ -105,13 +113,63 @@ export const CONTACT_FIELD_KEYS = {
   COMPANY: 'company',
 } as const satisfies Record<string, ContactField>;
 
-/** The editable fields, in form order. */
+/** The editable fields. */
 export const CONTACT_FIELDS: readonly ContactField[] = Object.values(CONTACT_FIELD_KEYS);
 
-export const CONTACT_FIELD_LABELS: Record<ContactField, string> = {
-  [CONTACT_FIELD_KEYS.FIRST_NAME]: 'First name',
-  [CONTACT_FIELD_KEYS.LAST_NAME]: 'Last name',
-  [CONTACT_FIELD_KEYS.EMAIL]: 'Email',
-  [CONTACT_FIELD_KEYS.PHONE]: 'Phone',
-  [CONTACT_FIELD_KEYS.COMPANY]: 'Company',
+/** The <input type> a field uses. */
+export const INPUT_TYPES = {
+  TEXT: 'text',
+  EMAIL: 'email',
+  TEL: 'tel',
+} as const;
+
+const { FIRST_NAME, LAST_NAME, EMAIL, PHONE, COMPANY } = CONTACT_FIELD_KEYS;
+const ERRORS = DETAIL_VIEW_TEXT.DETAILS.ERRORS;
+
+/** Each field's label, input and rules. A new field is one entry here plus a place in a section. */
+export const CONTACT_FIELD_CONFIG: Record<ContactField, ContactFieldConfig> = {
+  [FIRST_NAME]: { label: 'First name', inputType: INPUT_TYPES.TEXT, required: true, maxLength: MAX_NAME_LENGTH },
+  [LAST_NAME]: { label: 'Last name', inputType: INPUT_TYPES.TEXT, required: true, maxLength: MAX_NAME_LENGTH },
+  [EMAIL]: {
+    label: 'Email',
+    inputType: INPUT_TYPES.EMAIL,
+    maxLength: MAX_EMAIL_LENGTH,
+    pattern: { value: EMAIL_PATTERN, message: ERRORS.EMAIL_INVALID },
+    lowercase: true,
+  },
+  [PHONE]: { label: 'Phone', inputType: INPUT_TYPES.TEL, pattern: { value: PHONE_PATTERN, message: ERRORS.PHONE_INVALID } },
+  [COMPANY]: { label: 'Company', inputType: INPUT_TYPES.TEXT, maxLength: MAX_COMPANY_LENGTH },
+};
+
+export const CONTACT_TIMESTAMP_KEYS = {
+  CREATED_AT: 'createdAt',
+  UPDATED_AT: 'updatedAt',
+} as const satisfies Record<string, ContactTimestampField>;
+
+export const CONTACT_TIMESTAMP_LABELS: Record<ContactTimestampField, string> = {
+  [CONTACT_TIMESTAMP_KEYS.CREATED_AT]: DETAIL_VIEW_TEXT.DETAILS.CREATED,
+  [CONTACT_TIMESTAMP_KEYS.UPDATED_AT]: DETAIL_VIEW_TEXT.DETAILS.LAST_UPDATED,
+};
+
+/** What a section holds (see ContactFieldSection). */
+export const SECTION_TYPES = {
+  EDITABLE: 'editable',
+  TIMESTAMPS: 'timestamps',
+} as const;
+
+/** How the Details card groups the fields, in order. View mode shows every section; edit mode the editable ones. */
+export const CONTACT_FIELD_SECTIONS: readonly ContactFieldSection[] = [
+  { type: SECTION_TYPES.EDITABLE, key: 'contact', columns: 2, fields: [FIRST_NAME, LAST_NAME, EMAIL, PHONE, COMPANY] },
+  {
+    type: SECTION_TYPES.TIMESTAMPS,
+    key: 'timestamps',
+    columns: 2,
+    fields: [CONTACT_TIMESTAMP_KEYS.CREATED_AT, CONTACT_TIMESTAMP_KEYS.UPDATED_AT],
+  },
+];
+
+/** A section's grid, by its column count. */
+export const SECTION_GRID_CLASSES: Record<ContactFieldSection['columns'], string> = {
+  1: 'grid gap-y-5',
+  2: 'grid gap-x-8 gap-y-5 sm:grid-cols-2',
 };

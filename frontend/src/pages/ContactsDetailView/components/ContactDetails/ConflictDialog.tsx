@@ -3,7 +3,7 @@ import { Button } from '../../../../components/Button';
 import { EmptyValue } from '../../../../components/EmptyValue';
 import type { Contact } from '../../../../types/api.ts';
 import { formatDateTime } from '../../../../utils/format.ts';
-import { CONTACT_FIELD_LABELS, DETAIL_VIEW_TEXT } from '../../contactsDetailView.constants.ts';
+import { CONTACT_FIELD_CONFIG, DETAIL_VIEW_TEXT } from '../../contactsDetailView.constants.ts';
 import type { ConflictRow } from '../../contactsDetailView.types.ts';
 
 const TEXT = DETAIL_VIEW_TEXT.CONFLICT;
@@ -56,7 +56,7 @@ export function ConflictDialog({ current, rows, isApplying, onCancel, onReload, 
                       {rows.map(({ field, yours, current: theirs }) => (
                         <tr key={field}>
                           <th scope="row" className="px-4 py-3 font-normal text-gray-600">
-                            {CONTACT_FIELD_LABELS[field]}
+                            {CONTACT_FIELD_CONFIG[field].label}
                           </th>
                           <td className="px-4 py-3 font-medium break-all text-gray-900">{yours ?? <EmptyValue />}</td>
                           <td className="px-4 py-3 break-all text-gray-900">{theirs ?? <EmptyValue />}</td>

@@ -1,12 +1,5 @@
 import { ApiError } from '../../api/client.ts';
 import { ACTIVITY_TYPES, CONTACT_TAG_ACTIONS } from '../../constants/contact.ts';
-import {
-  EMAIL_PATTERN,
-  MAX_COMPANY_LENGTH,
-  MAX_EMAIL_LENGTH,
-  MAX_NAME_LENGTH,
-  PHONE_PATTERN,
-} from '../../constants/contact.ts';
 import type { ContactTagChange } from '../../queries/contacts-queries.ts';
 import type {
   Activity,
@@ -17,8 +10,8 @@ import type {
   VersionConflictDetails,
 } from '../../types/api.ts';
 import {
+  CONTACT_FIELD_CONFIG,
   CONTACT_FIELD_KEYS,
-  CONTACT_FIELD_LABELS,
   CONTACT_FIELDS,
   DETAIL_VIEW_STATUS,
   DETAIL_VIEW_TEXT,
@@ -59,62 +52,53 @@ export function isFailedContactData(
 // Edit form. Pure functions: the form hook (useContactEditForm) keeps only the state.
 
 const ERRORS = DETAIL_VIEW_TEXT.DETAILS.ERRORS;
-const { FIRST_NAME, LAST_NAME, EMAIL, PHONE, COMPANY } = CONTACT_FIELD_KEYS;
+const { EMAIL } = CONTACT_FIELD_KEYS;
+
+/** All fields blank: the form's values before editing has started. */
+export function emptyFormValues(): ContactFormValues {
+  const values = {} as ContactFormValues;
+  for (const field of CONTACT_FIELDS) {
+    values[field] = '';
+  }
+  return values;
+}
 
 export function toFormValues(contact: ContactFields): ContactFormValues {
-  return {
-    [FIRST_NAME]: contact[FIRST_NAME],
-    [LAST_NAME]: contact[LAST_NAME],
-    [EMAIL]: contact[EMAIL] ?? '',
-    [PHONE]: contact[PHONE] ?? '',
-    [COMPANY]: contact[COMPANY] ?? '',
-  };
+  const values = {} as ContactFormValues;
+  for (const field of CONTACT_FIELDS) {
+    values[field] = contact[field] ?? '';
+  }
+  return values;
 }
 
-/** The values as the backend will store them: trimmed, blank → null, email lowercased. */
+/** The values as the backend will store them: trimmed, blank → null (unless required), lowercased where set. */
 export function normalizeFormValues(values: ContactFormValues): ContactFields {
-  const optional = (value: string) => value.trim() || null;
-  return {
-    [FIRST_NAME]: values[FIRST_NAME].trim(),
-    [LAST_NAME]: values[LAST_NAME].trim(),
-    [EMAIL]: optional(values[EMAIL])?.toLowerCase() ?? null,
-    [PHONE]: optional(values[PHONE]),
-    [COMPANY]: optional(values[COMPANY]),
-  };
+  const normalized: Record<ContactField, string | null> = { ...values };
+  for (const field of CONTACT_FIELDS) {
+    const { required, lowercase } = CONTACT_FIELD_CONFIG[field];
+    const value = lowercase ? values[field].trim().toLowerCase() : values[field].trim();
+    normalized[field] = value || (required ? '' : null);
+  }
+  // Required fields are never null here, which is what ContactFields says.
+  return normalized as ContactFields;
 }
 
-/** The same rules as the backend's updateContactBodySchema, with messages for the user. */
+/** Each field's rules from CONTACT_FIELD_CONFIG (the backend's updateContactBodySchema), with messages for the user. */
 export function validateContactForm(values: ContactFormValues): ContactFormErrors {
   const normalized = normalizeFormValues(values);
-  const firstName = normalized[FIRST_NAME];
-  const lastName = normalized[LAST_NAME];
-  const email = normalized[EMAIL];
-  const phone = normalized[PHONE];
-  const company = normalized[COMPANY];
   const errors: ContactFormErrors = {};
-
-  if (!firstName) {
-    errors[FIRST_NAME] = ERRORS.FIRST_NAME_REQUIRED;
-  } else if (firstName.length > MAX_NAME_LENGTH) {
-    errors[FIRST_NAME] = ERRORS.NAME_TOO_LONG(CONTACT_FIELD_LABELS[FIRST_NAME]);
-  }
-  if (!lastName) {
-    errors[LAST_NAME] = ERRORS.LAST_NAME_REQUIRED;
-  } else if (lastName.length > MAX_NAME_LENGTH) {
-    errors[LAST_NAME] = ERRORS.NAME_TOO_LONG(CONTACT_FIELD_LABELS[LAST_NAME]);
-  }
-  if (email !== null) {
-    if (email.length > MAX_EMAIL_LENGTH) {
-      errors[EMAIL] = ERRORS.EMAIL_TOO_LONG;
-    } else if (!EMAIL_PATTERN.test(email)) {
-      errors[EMAIL] = ERRORS.EMAIL_INVALID;
+  for (const field of CONTACT_FIELDS) {
+    const value = normalized[field];
+    const { label, required, maxLength, pattern } = CONTACT_FIELD_CONFIG[field];
+    if (!value) {
+      if (required) {
+        errors[field] = ERRORS.REQUIRED(label);
+      }
+    } else if (maxLength !== undefined && value.length > maxLength) {
+      errors[field] = ERRORS.TOO_LONG(label, maxLength);
+    } else if (pattern && !pattern.value.test(value)) {
+      errors[field] = pattern.message;
     }
-  }
-  if (phone !== null && !PHONE_PATTERN.test(phone)) {
-    errors[PHONE] = ERRORS.PHONE_INVALID;
-  }
-  if (company !== null && company.length > MAX_COMPANY_LENGTH) {
-    errors[COMPANY] = ERRORS.COMPANY_TOO_LONG;
   }
   return errors;
 }
@@ -177,7 +161,7 @@ export function getSaveError(error: unknown): SaveError {
       const serverFields = (error.details as ValidationErrorDetails | undefined)?.fieldErrors ?? {};
       for (const field of CONTACT_FIELDS) {
         if (serverFields[field]?.length) {
-          fieldErrors[field] = ERRORS.INVALID(CONTACT_FIELD_LABELS[field]);
+          fieldErrors[field] = ERRORS.INVALID(CONTACT_FIELD_CONFIG[field].label);
         }
       }
       return Object.keys(fieldErrors).length > 0
@@ -220,7 +204,7 @@ export function getTagChangeFailure(error: unknown, { action, tag }: ContactTagC
 const ACTIVITY_TEXT = DETAIL_VIEW_TEXT.ACTIVITY;
 
 function describeChange(field: ContactField, { from, to }: FieldChange): string {
-  const label = CONTACT_FIELD_LABELS[field].toLowerCase();
+  const label = CONTACT_FIELD_CONFIG[field].label.toLowerCase();
   if (from === null && to !== null) {
     return ACTIVITY_TEXT.FIELD_SET(label, to);
   }
@@ -248,7 +232,7 @@ export function describeActivity(activity: Activity): ActivityDescription {
       const fields = CONTACT_FIELDS.filter((field) => changes[field] !== undefined);
       const parts = fields.map((field, index) => {
         const change = changes[field] as FieldChange;
-        return index === 0 ? describeChange(field, change) : ACTIVITY_TEXT.FIELD_CHANGED_SHORT(CONTACT_FIELD_LABELS[field].toLowerCase());
+        return index === 0 ? describeChange(field, change) : ACTIVITY_TEXT.FIELD_CHANGED_SHORT(CONTACT_FIELD_CONFIG[field].label.toLowerCase());
       });
       return { title: ACTIVITY_TEXT.CONTACT_UPDATED, detail: parts.length > 0 ? parts.join(', ') : null, tone: 'updated' };
     }
